@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+
+<html lang="en-US" xml:lang="en-US">
+<head><title>Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata — HTML preprint | Isaac Breen</title>
+<meta charset="utf-8"/>
+<meta content="TeX4ht (https://tug.org/tex4ht/)" name="generator"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="main.css" rel="stylesheet" type="text/css"/>
+<meta content="main.tex" name="src"/>
+<script>
+window.MathJax = {
+  loader: {
+    load: ["ui/menu", "a11y/assistive-mml"]
+  },
+  tex: {
+    tags: "ams",
+    macros: {
+      bigO: "\\mathcal{O}",
+      vocab: "\\mathcal{V}",
+      grammar: "\\mathcal{G}",
+      states: "\\mathcal{S}",
+      automaton: "\\mathcal{A}",
+      dwa: "\\text{DWA}",
+      nwa: "\\text{NWA}",
+      sep: "\\text{Sep1}",
+      llbracket: "\\unicode{x27E6}",
+      rrbracket: "\\unicode{x27E7}",
+      textsc: ["\\text{#1}", 1],
+      Call: ["\\text{#1}(#2)", 2],
+      gets: "\\leftarrow",
+      textit: ["\\mathit{#1}", 1],
+      checkmark: "\\unicode{x2713}"
+    }
+  },
+  chtml: {
+    matchFontHeight: false
+  },
+  options: {
+    enableMenu: true,
+    menuOptions: {
+      settings: {
+        assistiveMml: true
+      }
+    }
+  },
+  startup: {
+    pageReady: function() {
+      function withDelimiters(math, display) {
+        return display ? "\\[" + math + "\\]" : "\\(" + math + "\\)";
+      }
+
+      function annotateMath() {
+        var mathItems = MathJax.startup.document.math || [];
+        for (var item of mathItems) {
+          var root = item.typesetRoot;
+          if (!root) continue;
+          root.dataset.latex = withDelimiters(item.math, item.display);
+          root.setAttribute("title", "Copy as LaTeX: " + root.dataset.latex);
+        }
+      }
+
+      function selectedTextWithLatex(fragment) {
+        function render(node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent || "";
+          }
+          if (node.nodeType !== Node.ELEMENT_NODE) {
+            return "";
+          }
+          if (node.matches("mjx-container")) {
+            return node.dataset.latex || node.textContent || "";
+          }
+          if (node.matches("br")) {
+            return "\n";
+          }
+          var text = "";
+          for (var child of node.childNodes) {
+            text += render(child);
+          }
+          if (node.matches("p, div, section, article, li, h1, h2, h3, h4, h5, h6")) {
+            text += "\n";
+          }
+          return text;
+        }
+        return render(fragment).replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      }
+
+      function installCopyHandler() {
+        document.addEventListener("copy", function(event) {
+          var selection = window.getSelection();
+          if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+          var range = selection.getRangeAt(0);
+          var fragment = range.cloneContents();
+          if (!fragment.querySelector || !fragment.querySelector("mjx-container")) return;
+          var text = selectedTextWithLatex(fragment);
+          if (!text) return;
+          event.clipboardData.setData("text/plain", text);
+          event.preventDefault();
+        });
+      }
+
+      return MathJax.startup.defaultPageReady().then(function() {
+        annotateMath();
+        installCopyHandler();
+      });
+    }
+  }
+};
+</script>
+<script async="async" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+<link href="paper-style.css?v=fd038319abb9" rel="stylesheet"/>
+
+<style>
+#toc-sidebar .toc-h4 {
+  padding-left: 1.6rem;
+  font-size: 0.72rem;
+  color: #777;
+}
+#label-switch {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1002;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.7rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+#label-switch:hover {
+  border-color: #8c959f;
+  color: #0055aa;
+  text-decoration: none;
+}
+#label-switch.labels-on::before,
+#label-switch.labels-off::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+}
+#label-switch.labels-on::before {
+  background: #238636;
+}
+#label-switch.labels-off::before {
+  background: #8c959f;
+}
+</style>
+<meta name="description" content="A technical preprint by Isaac Breen on exact grammar-constrained decoding with Boolean array weighted automata.">
+<meta name="citation_title" content="Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata">
+<meta name="citation_author" content="Isaac Breen">
+<meta name="citation_publication_date" content="2026/10/09">
+<meta name="citation_online_date" content="2026/10/09">
+<meta name="citation_technical_report_institution" content="Independent research">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata">
+<meta property="og:description" content="Independent research preprint · Isaac Breen · 9 October 2026">
+<link rel="canonical" href="https://isaacbreen.github.io/glrmask-preprint/">
+</head><body>
+<div class="preprint-header" role="note">
+      <div class="preprint-kicker"><span class="preprint-dot"></span> RESEARCH PREPRINT <span class="preprint-sep">·</span> VERSION 1 <span class="preprint-sep">·</span> 9 OCT 2026</div>
+      <div class="preprint-caption">HTML reading edition · Isaac Breen · Not peer reviewed</div>
+      <nav class="preprint-links" aria-label="Preprint links">
+        <a href="https://github.com/IsaacBreen/glrmask">GLRMask source ↗</a>
+        <a href="https://github.com/IsaacBreen/glrmask-preprint">Preprint archive ↗</a>
+        <a href="https://arxiv.org/abs/2608.03065">Related work: PSC ↗</a>
+      </nav>
+      <p class="preprint-note">This version describes the weighted-automaton method and cites related work. Performance measurements refer to the August 2026 benchmark snapshot, not necessarily the latest development build.</p>
+    </div>
+<a id="label-switch" class="labels-off" href="current.html" data-target="current.html" aria-label="Switch paragraph and sentence labels">Labels off</a>
+
+<nav id="toc-sidebar"><h2>Contents</h2><ul>
+<li class="toc-h2"><a href="#introduction">1 Introduction</a></li>
+<li class="toc-h2"><a href="#mask-semantics">2 Mask Semantics</a></li>
+<li class="toc-h3"><a href="#languagelevel-mask">2.1 Language-Level Mask</a></li>
+<li class="toc-h3"><a href="#runtime-state">2.2 Runtime State</a></li>
+<li class="toc-h3"><a href="#runtime-mask">2.3 Runtime Mask</a></li>
+<li class="toc-h3"><a href="#mask-and-commit">2.4 Mask and Commit</a></li>
+<li class="toc-h2"><a href="#lexer">3 Lexer</a></li>
+<li class="toc-h3"><a href="#model">3.1 Model</a></li>
+<li class="toc-h3"><a href="#execution">3.2 Execution</a></li>
+<li class="toc-h3"><a href="#partial-matches">3.3 Partial Matches</a></li>
+<li class="toc-h3"><a href="#longestmatch-exclusions">3.4 Longest-Match Exclusions</a></li>
+<li class="toc-h2"><a href="#parser-stack-effects">4 Parser Stack Effects</a></li>
+<li class="toc-h3"><a href="#stack-effects">4.1 Stack Effects</a></li>
+<li class="toc-h3"><a href="#stack-effects-from-glr-tables">4.2 Stack Effects from GLR Tables</a></li>
+<li class="toc-h3"><a href="#stack-effects-from-free-gpdas">4.3 Stack Effects from \(\epsilon \)-Free GPDAs</a></li>
+<li class="toc-h3"><a href="#stackeffect-automata">4.4 Stack-Effect Automata</a></li>
+<li class="toc-h3"><a href="#composition">4.5 Composition</a></li>
+<li class="toc-h3"><a href="#read-projection">4.6 Read Projection</a></li>
+<li class="toc-h2"><a href="#parser-dwa-construction">5 Parser DWA Construction</a></li>
+<li class="toc-h3"><a href="#boolean-weights">5.1 Boolean Weights</a></li>
+<li class="toc-h3"><a href="#weighted-automata">5.2 Weighted Automata</a></li>
+<li class="toc-h3"><a href="#terminal-dwa">5.3 Terminal DWA</a></li>
+<li class="toc-h3"><a href="#parser-dwa">5.4 Parser DWA</a></li>
+<li class="toc-h2"><a href="#runtime">6 Runtime</a></li>
+<li class="toc-h3"><a href="#runtime-state1">6.1 Runtime State</a></li>
+<li class="toc-h3"><a href="#mask">6.2 Mask</a></li>
+<li class="toc-h4"><a href="#shared-gss-walk">6.2.1 Shared GSS Walk</a></li>
+<li class="toc-h4"><a href="#exclusion-filtering">6.2.2 Exclusion Filtering</a></li>
+<li class="toc-h3"><a href="#commit">6.3 Commit</a></li>
+<li class="toc-h2"><a href="#correctness">7 Correctness</a></li>
+<li class="toc-h3"><a href="#main-theorem">7.1 Main Theorem</a></li>
+<li class="toc-h3"><a href="#lexer-correspondence">7.2 Lexer Correspondence</a></li>
+<li class="toc-h3"><a href="#stackeffect-correspondence">7.3 Stack-Effect Correspondence</a></li>
+<li class="toc-h3"><a href="#readprojection-lemma">7.4 Read-Projection Lemma</a></li>
+<li class="toc-h3"><a href="#parserdwa-lemma">7.5 Parser-DWA Lemma</a></li>
+<li class="toc-h3"><a href="#mask-lemma">7.6 Mask Lemma</a></li>
+<li class="toc-h3"><a href="#commit-invariant">7.7 Commit Invariant</a></li>
+<li class="toc-h2"><a href="#finiteness-and-scope">8 Finiteness and Scope</a></li>
+<li class="toc-h3"><a href="#bounded-terminal-effects">8.1 Bounded Terminal Effects</a></li>
+<li class="toc-h3"><a href="#grammar-normalization">8.2 Grammar Normalization</a></li>
+<li class="toc-h3"><a href="#why-the-read-depth-is-bounded">8.3 Why the Read Depth Is Bounded</a></li>
+<li class="toc-h3"><a href="#-moves">8.4 \(\epsilon \)-Moves</a></li>
+<li class="toc-h3"><a href="#fixed-vocabulary">8.5 Fixed Vocabulary</a></li>
+<li class="toc-h3"><a href="#unsupported-parser-models">8.6 Unsupported Parser Models</a></li>
+<li class="toc-h2"><a href="#implementation">9 Implementation</a></li>
+<li class="toc-h3"><a href="#glr-tables">9.1 GLR Tables</a></li>
+<li class="toc-h3"><a href="#stackeffect-automata1">9.2 Stack-Effect Automata</a></li>
+<li class="toc-h3"><a href="#lexer-tables">9.3 Lexer Tables</a></li>
+<li class="toc-h3"><a href="#parser-dwa-layout">9.4 Parser DWA Layout</a></li>
+<li class="toc-h3"><a href="#weight-representation">9.5 Weight Representation</a></li>
+<li class="toc-h3"><a href="#transition-tables">9.6 Transition Tables</a></li>
+<li class="toc-h3"><a href="#gss-traversal">9.7 GSS Traversal</a></li>
+<li class="toc-h3"><a href="#endofsequence">9.8 End-of-Sequence</a></li>
+<li class="toc-h3"><a href="#prefill">9.9 Prefill</a></li>
+<li class="toc-h3"><a href="#artifact-size">9.10 Artifact Size</a></li>
+<li class="toc-h2"><a href="#evaluation">10 Evaluation</a></li>
+<li class="toc-h2"><a href="#related-work">11 Related Work</a></li>
+<li class="toc-h2"><a href="#discussion">12 Discussion</a></li>
+<li class="toc-h2"><a href="#conclusion">13 Conclusion</a></li>
+</ul></nav>
+<button id="toc-toggle" aria-label="Toggle table of contents">☰</button>
+<div id="toc-overlay"></div>
+
+<div class="center">
+<!-- l. 110 --><p class="noindent">
+</p><!-- l. 111 --><p class="noindent"><span class="ecbx-1728">Exact Grammar-Constrained
+</span><span class="ecbx-1728">Decoding with</span><br/>
+<span class="ecbx-1728">Boolean Array Weighted Automata</span><br/><br/>
+<span class="ecrm-1200">Isaac Breen</span><br/><br/>
+October 9, 2026</p></div>
+<section class="abstract" role="doc-abstract">
+<h3 class="abstracttitle">
+<span class="ecbx-1000">Abstract</span>
+</h3>
+<!-- l. 119 --><p class="noindent"><span class="ecrm-1000">Grammar-constrained  decoding  (GCD)  forces  LLM
+     </span><span class="ecrm-1000">outputs to conform to a specified grammar. During
+     </span><span class="ecrm-1000">sampling,  GCD  applies  a  mask  to  the  model’s
+     </span><span class="ecrm-1000">next-token distribution, ruling out tokens that would
+     </span><span class="ecrm-1000">leave no grammar-valid continuation. For context-free
+     </span><span class="ecrm-1000">grammars,                token                admissibility
+     </span><span class="ecrm-1000">under   this   mask   depends   on   the   parser   state.
+     </span><span class="ecrm-1000">Existing CFG-capable systems commonly resolve this
+     </span><span class="ecrm-1000">dependence by exploring parser behavior online during
+     </span><span class="ecrm-1000">mask  generation.  For  delimiter-rich  JSON-schema
+     </span><span class="ecrm-1000">workloads this online work is often small enough that
+     </span><span class="ecrm-1000">optimized systems are already practical; it becomes a
+     </span><span class="ecrm-1000">sharper issue for tail predictability and for grammars
+     </span><span class="ecrm-1000">whose  lexer/parser  interactions  are  less  JSON-like.
+     </span><span class="ecrm-1000">This  paper  presents  </span><span class="eccc1000-"><span class="small-caps">Merlon</span></span><span class="ecrm-1000">,  a  GCD  system  that
+     </span><span class="ecrm-1000">compiles  the  parser-state-dependent  part  of  token
+     </span><span class="ecrm-1000">admissibility  ahead  of  time.  Given  a  grammar  and
+     </span><span class="ecrm-1000">a  vocabulary,  </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">constructs  a  deterministic
+     </span><span class="ecrm-1000">weighted automaton, the </span><span class="ecti-1000">Parser DWA</span><span class="ecrm-1000">, whose input
+     </span><span class="ecrm-1000">symbols are parser-stack symbols and whose weights
+     </span><span class="ecrm-1000">are  Boolean  masks  over  lexer-state/token  pairs.  At
+     </span><span class="ecrm-1000">runtime,  mask  generation  feeds  the  parser  stack
+     </span><span class="ecrm-1000">directly into this automaton one symbol at a time,
+     </span><span class="ecrm-1000">with  each  transition’s  Boolean  weight  narrowing
+     </span><span class="ecrm-1000">a  running  set  of  allowed  tokens  as  it  is  taken.
+     </span><span class="ecrm-1000">The  traversal  treats  the  parser  stack  as  read-only.
+     </span><span class="ecrm-1000">State-mutating parser actions are confined to </span><span class="ecti-1000">commit</span><span class="ecrm-1000">,
+     </span><span class="ecrm-1000">which advances the parser with the sampled token. On
+     </span><span class="ecrm-1000">the 9,558-schema official JSONSchemaBench corpus,
+     </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">achieves 3.05</span> \(\mu \)<span class="ecrm-1000">s median, 10.3</span> \(\mu \)<span class="ecrm-1000">s p99, and 70.1</span> \(\mu \)<span class="ecrm-1000">s
+     </span><span class="ecrm-1000">maximum Time Between Masks (mask plus commit),
+     </span><span class="ecrm-1000">compared with 10.5</span> \(\mu \)<span class="ecrm-1000">s, 223</span> \(\mu \)<span class="ecrm-1000">s, and 14.4 ms for llguidance.
+     </span><span class="ecrm-1000">The trade-off is cold construction:  </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">is best
+     </span><span class="ecrm-1000">interpreted  as  a  cached  or  precompiled  hot-path
+     </span><span class="ecrm-1000">representation,  while  llguidance  remains  the  better
+     </span><span class="ecrm-1000">choice for many first-use or single-use JSON schemas.</span>
+</p>
+</section>
+<figure class="figure">
+<!-- l. 149 --><p class="noindent" id="-time-between-masks-over-the-official-jsonschemabench-schemas-the-figure-reports-the-latest-audited-cfa-timing-view-see-secexperiments-for-provenance-"><img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/b_maskbench_tbm.png" width="289"/> <a id="x1-2r1"></a>
+<a id="x1-3"></a>
+</p>
+<figcaption class="caption"><span class="id">Figure 1:  </span><span class="content">Time  Between  Masks  over  the  9,558  official
+JSONSchemaBench  schemas.  The  figure  reports  the  latest
+audited CFA timing view; see §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> for provenance.          </span></figcaption><!-- tex4ht:label?: x1-2r  -->
+</figure>
+<h3 class="sectionHead" id="introduction"><span class="titlemark">1   </span> <a id="x1-10001"></a>Introduction</h3>
+<!-- l. 7 --><p class="noindent">Large language models are now routinely asked to produce
+output that must satisfy hard structural constraints: JSON
+objects matching a schema, tool calls with typed arguments, SQL
+or configuration fragments, programming-language expressions,
+and domain-specific command languages. Grammar-constrained
+decoding (GCD) enforces such constraints during generation,
+guaranteeing that the output conforms to a target grammar.
+Rather than sampling from the model’s distribution directly, the
+decoder first masks out every next token that would lead to a
+grammatical dead end, then samples from what survives, so
+generation never enters a prefix from which no valid completion
+exists.
+</p><!-- l. 9 --><p class="indent">   For a target byte language \(L \subseteq \mathcal B^*\), a byte prefix \(u\), and a tokenizer
+vocabulary \(\mathcal V\), the mask contains exactly those tokens whose bytes
+leave at least one valid completion: \[ Mask_L(u)=\{v\in \mathcal V : \exists w\in \mathcal B^*.\; u\beta (v)w\in L\}, \] where \(\beta (v)\) is the byte string of
+token \(v\). At each step the decoder computes \(Mask_L(u)\), samples from the
+model distribution restricted to that set, and commits the chosen
+token.
+</p><!-- l. 15 --><p class="indent">   For regular constraints, this is simple. Before decoding, build
+a mask for each automaton state. Run each vocabulary token
+from that state; if the run avoids the dead state, include the
+token in that state’s mask. A vocabulary trie keeps this
+pass efficient by avoiding repeated work on shared prefixes.
+At runtime, the decoder just uses the mask for its current
+state.
+</p><!-- l. 17 --><p class="indent">   For context-free grammars, a lexer is not enough. It can
+recognize terminal structure, but it cannot represent the
+grammar or summarize parser context. A token may admit no
+completed terminal, one completed terminal, or several
+completed terminals from the current lexer state; any completed
+terminals must also be compatible with the current parser stack.
+Under lexical or grammatical ambiguity, the same token can
+induce many lexer paths, terminal sequences, and parser
+continuations.
+</p><!-- l. 19 --><p class="indent">   Existing CFG-capable decoders commonly answer this
+query by online search. During mask generation, they run
+candidate tokens through the lexer and test the parser actions or
+continuations those tokens may induce. This puts hypothetical
+parser execution in the token-generation loop. On delimiter-rich
+JSON workloads, optimized online systems can make this cost
+small enough for ordinary serving. On less regular grammars, and
+in the tail even on JSON-like workloads, the cost still depends on
+lexer ambiguity and parser ambiguity.
+</p><!-- l. 21 --><p class="indent">   This paper presents <span class="eccc1095-"><span class="small-caps">Merlon</span></span>, a grammar-constrained
+decoding system that compiles the parser-dependent part of this
+search ahead of time. Given a grammar and tokenizer vocabulary,
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>constructs a deterministic weighted automaton
+over LR stack symbols whose weights are token masks. At
+runtime, mask generation runs this automaton on the current
+parser stack, one symbol at a time. The returned mask is
+the intersection of the weights encountered along this run.
+Parser actions are not explored during this traversal. They
+are confined to commit, after a token has actually been
+sampled.
+</p><!-- l. 23 --><p class="indent">   The result is an exact CFG-constrained decoder with
+predictable per-token latency. It handles vocabulary tokens that
+cross grammar-terminal boundaries while preserving the standard
+mask/sample/commit interface. The parser still determines which
+tokens are admissible, but the parser-dependent search for
+hypothetical tokens is compiled ahead of time. This is most
+valuable when the grammar is reused, when worst-case mask
+latency matters, or when the grammar is not one of the
+delimiter-separated JSON schemas for which online systems are
+already highly optimized.
+</p><!-- l. 25 --><p class="indent">   This paper makes the following contributions:
+   </p><dl class="enumerate-enumitem"><dt class="enumerate-enumitem">
+1. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">A stack-read characterization of exact CFG token
+   </span><span class="ecbx-1095">admissibility</span>, separating the lexer/token relation from
+   the parser-stack relation and showing that mask queries
+   require  only  the  regular  read  projections  of  composed
+   terminal stack effects.
+   </dd><dt class="enumerate-enumitem">
+2. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">The  Parser  DWA</span>,  a  compile-time  construction  that
+   shares the read-prefix languages of all lexer-state/token
+   pairs in a single deterministic weighted automaton over
+   stack  symbols,  built  by  effect  substitution,  write/read
+   cancellation, read projection, and determinization.
+   </dd><dt class="enumerate-enumitem">
+3. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">A  replay-free  exact  runtime  </span>that  evaluates  the
+   compiled automaton over graph-structured parser stacks,
+   combines  masks  across  branches  and  merges,  handles
+   longest-match  lexing  and  end-of-sequence  exactly,  and
+   applies parser transitions only at commit.
+   </dd><dt class="enumerate-enumitem">
+4. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">An       empirical       evaluation      </span>demonstrating
+   microsecond-scale,   tightly   bounded   mask   latency   on
+   realistic structured-output workloads, while also showing
+   the  economic  trade-off:  llguidance  is  usually  the  better
+   cold-start system for single-use JSON schemas, whereas
+   <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>targets  cached  constraints,  tail  predictability,
+   and more general CFG workloads.</dd></dl>
+<h3 class="sectionHead" id="mask-semantics"><span class="titlemark">2   </span> <a id="x1-20002"></a>Mask Semantics</h3>
+<!-- l. 7 --><p class="noindent">This section makes the mask semantics explicit. It defines the
+language-level mask, the runtime configuration set, and the
+<span class="eccc1095-"><span class="small-caps">Mask</span> </span>and <span class="eccc1095-"><span class="small-caps">Commit</span> </span>operations.
+</p><!-- l. 11 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="languagelevel-mask"><span class="titlemark">2.1   </span> <a id="x1-30002.1"></a>Language-Level Mask</h4>
+<!-- l. 14 --><p class="noindent">Let \(L\) be the language recognised by the grammar, and let \(\beta (v)\) be the
+byte string for token \(v\). After prefix \(u\), token \(v\) is valid exactly when \(u\beta (v)\)
+can still be completed to a string in \(L\): \begin {equation}  \label {def:valid-token} \mathrm {Mask}_{L}(u) = \{\,v\in \mathcal V : \exists w,\;u\,\beta (v)\,w\in L\,\}.  \end {equation}
+Everything that follows is an efficient, exact implementation of
+this one set.
+</p><!-- l. 26 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="runtime-state"><span class="titlemark">2.2   </span> <a id="x1-40002.2"></a>Runtime State</h4>
+<!-- l. 29 --><p class="noindent">The runtime never stores the consumed prefix \(u\); it stores a finite
+set of possible configurations instead. Let \(\mathcal T\) be the grammar
+terminals, \(Q_{\mathrm {lex}}\) the lexer states, \(Q_{\mathrm {LR}}\) the parser stack symbols, and \(\mathcal E\) the
+set of longest-match exclusion maps. A <span class="ecti-1095">configuration set </span>is a
+finite set of runtime configurations, \[ C\subseteq Q_{\mathrm {lex}}\times Q_{\mathrm {LR}}^*\times \mathcal E, \] where each configuration is a
+triple \((q,\sigma ,e)\): </p>
+<ul class="itemize1">
+<li class="itemize">\(q\in Q_{\mathrm {lex}}\) is the current lexer state;
+  </li>
+<li class="itemize">\(\sigma =p_0p_1\cdots p_m\in Q_{\mathrm {LR}}^*\) is the current parser stack, written top-first, so \(p_0\) is the
+  top-of-stack state;
+  </li>
+<li class="itemize">\(e:Q_{\mathrm {lex}}\rightharpoonup 2^{\mathcal T}\) is a longest-match exclusion map in \(\mathcal E\). An entry \(t\in e(q')\) declares
+  that  this  configuration  must  be  discarded  if  terminal  \(t\)
+  matches while scanning the next fragment from lexer state
+  \(q'\).</li></ul>
+<!-- l. 48 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="runtime-mask"><span class="titlemark">2.3   </span> <a id="x1-50002.3"></a>Runtime Mask</h4>
+<!-- l. 51 --><p class="noindent">Token validity over a configuration factors into a lexer side and a
+parser side. For a single configuration, token \(v\) is admissible
+exactly when both conditions hold:
+   </p><dl class="enumerate-enumitem"><dt class="enumerate-enumitem">
+1. </dt><dd class="enumerate-enumitem">\(v\) passes the longest-match exclusion check, \(\mathrm {ExclOK}(e,\beta (v))\).
+   </dd><dt class="enumerate-enumitem">
+2. </dt><dd class="enumerate-enumitem">Some terminal sequence \(r\) induced by scanning \(\beta (v)\) from lexer
+   state \(q\) can be parsed from stack \(\sigma \).</dd></dl>
+<!-- l. 60 --><p class="noindent">Equivalently, \begin {equation}  \label {eq:mask-condition} \begin {aligned} \mathrm {Adm}(q,\sigma ,e;v) \quad \Longleftrightarrow \quad &amp;\mathrm {ExclOK}(e,\beta (v))\\ &amp;{}\land \exists r\in \mathrm {Lex}(q,\beta (v)): \mathrm {Parseable}(r,\sigma ). \end {aligned}  \end {equation}
+The three relations here are defined and compiled in §<a href="#parser-dwa-construction">5<!-- tex4ht:ref: sec:compilation  --></a>:
+</p>
+<ul class="itemize1">
+<li class="itemize">\(\mathrm {Lex}(q,b)\subseteq \mathcal T^*\):  the  complete  terminal  sequences  obtained  by  scanning
+  fragment \(b\) from lexer state \(q\) (§<a href="#lexer">3<!-- tex4ht:ref: sec:tokenizer-semantics  --></a>);
+  </li>
+<li class="itemize">\(\mathrm {ExclOK}(e,b)\): whether fragment \(b\) respects the longest-match exclusions
+  in \(e\) (§<a href="#longestmatch-exclusions">3.4<!-- tex4ht:ref: sec:longest-match-exclusions  --></a>);
+  </li>
+<li class="itemize">\(\mathrm {Parseable}(r,\sigma )\): whether terminal sequence \(r\) can be parsed from stack \(\sigma \)
+  (§<a href="#read-projection">4.6<!-- tex4ht:ref: sec:read-projection  --></a>).</li></ul>
+<!-- l. 83 --><p class="indent">   For a configuration set \(C\) reached after consuming prefix \(u\),
+the runtime mask collects the tokens admitted by at least
+one configuration, \[ \mathrm {Mask}_{\mathrm {rt}}(C) = \{\,v\in \mathcal V : \exists (q,\sigma ,e)\in C,\; \mathrm {Adm}(q,\sigma ,e;v) \,\}, \] The rest of the paper maintains the
+invariant that this runtime mask agrees with the specification:
+\begin {equation}  \label {eq:runtime-invariant} \mathrm {Mask}_{\mathrm {rt}}(C)=\mathrm {Mask}_{L}(u).  \end {equation}
+§<a href="#parser-dwa-construction">5<!-- tex4ht:ref: sec:compilation  --></a> builds the automaton that makes \(\mathrm {Mask}_{\mathrm {rt}}\) a walk; §<a href="#runtime">6<!-- tex4ht:ref: sec:runtime  --></a> gives the walk
+and shows that <span class="eccc1095-"><span class="small-caps">Commit</span> </span>preserves (the runtime invariant) (§<a href="#correctness">7<!-- tex4ht:ref: sec:runtime-correctness  --></a>).
+</p><!-- l. 104 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="mask-and-commit"><span class="titlemark">2.4   </span> <a id="x1-60002.4"></a>Mask and Commit</h4>
+<!-- l. 107 --><p class="noindent">With this invariant fixed, each decoding step has two operations.
+</p><!-- l. 109 --><p class="indent">
+</p><dl class="enumerate-enumitem"><dt class="enumerate-enumitem">
+1. </dt><dd class="enumerate-enumitem"><span class="eccc1095-"><span class="small-caps">Mask</span> </span>evaluates the Parser DWA on the parser stacks and
+   combines the weights encountered along the walk into a
+   vocabulary mask.
+   </dd><dt class="enumerate-enumitem">
+2. </dt><dd class="enumerate-enumitem"><span class="eccc1095-"><span class="small-caps">Commit</span></span>,  after  the  sampler  chooses  a  token,  scans  the
+   token  bytes,  emits  completed  terminals,  applies  the
+   compiled  stack  effect  for  each  emitted  terminal,  and
+   updates longest-match exclusions. The same operation can
+   advance by any byte fragment, which is what prefill needs.</dd></dl>
+<!-- l. 118 --><p class="indent">   The Parser DWA, its input labels (parser stack symbols), and
+its weights (masks over lexer-state/token pairs) are built once by
+the compiler of §<a href="#parser-dwa-construction">5<!-- tex4ht:ref: sec:compilation  --></a>. In the evaluated implementation the stack
+symbols are LR parser states, but <span class="eccc1095-"><span class="small-caps">Mask</span> </span>only reads stack
+symbols and combines weights; it never replays parser transitions
+for candidate tokens.
+</p>
+<div class="newtheorem">
+<!-- l. 124 --><p class="noindent"><span class="head">
+<a id="x1-6003r1"></a>
+<span class="ecbx-1095">Example 2.1 </span>(Running example)<span class="ecbx-1095">.</span> </span> We thread one small
+grammar through the method. It accepts balanced brackets
+nested around a single <span class="ectt-1095">x</span>, so <span class="ectt-1095">[x]</span>, <span class="ectt-1095">[[x]]</span>, and <span class="ectt-1095">[[[x]] </span>are in the
+language: \[ \texttt {start ::= "[" inner "]"}, \qquad \texttt {inner ::= "x" | "[" inner "]"}. \] The terminals are \(\texttt {[}\), \(\texttt {]}\), and \(\texttt {x}\). The vocabulary contains
+the single-terminal tokens \(\texttt {[}\), \(\texttt {]}\), \(\texttt {x}\) and the two-terminal tokens \(\texttt {[[}\), \(\texttt {]]}\),
+\(\texttt {x]}\), \(\texttt {[x}\); the two-terminal tokens are what make within-token
+parser effects visible. The masks below are produced by the
+implementation: </p>
+<div class="center">
+<!-- l. 140 --><p class="noindent">
+</p>
+<div class="tabular">
+<table class="tabular" id="TBL-1"><colgroup id="TBL-1-1g"><col id="TBL-1-1"/><col id="TBL-1-2"/></colgroup><tr id="TBL-1-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-1-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecbx-1000">after prefix  </span></td><td class="td11" id="TBL-1-1-2" style="white-space:nowrap; text-align:left;"> <span class="ecbx-1000">admissible tokens  </span></td>
+</tr><tr id="TBL-1-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-1-2-1" style="white-space:nowrap; text-align:left;"> \(\epsilon \) <span class="ecrm-1000">(start)          </span></td><td class="td11" id="TBL-1-2-2" style="white-space:nowrap; text-align:left;"> \(\texttt {[}\)<span class="ecrm-1000">, </span>\(\texttt {[[}\)<span class="ecrm-1000">, </span>\(\texttt {[x}\)                        </td>
+</tr><tr id="TBL-1-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-1-3-1" style="white-space:nowrap; text-align:left;"> \(\texttt {[}\)            </td><td class="td11" id="TBL-1-3-2" style="white-space:nowrap; text-align:left;"> \(\texttt {[}\)<span class="ecrm-1000">, </span>\(\texttt {x}\)<span class="ecrm-1000">, </span>\(\texttt {[[}\)<span class="ecrm-1000">, </span>\(\texttt {x]}\)<span class="ecrm-1000">, </span>\(\texttt {[x}\)                     </td>
+</tr><tr id="TBL-1-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-1-4-1" style="white-space:nowrap; text-align:left;"> \(\texttt {[[}\)            </td><td class="td11" id="TBL-1-4-2" style="white-space:nowrap; text-align:left;"> \(\texttt {[}\)<span class="ecrm-1000">, </span>\(\texttt {x}\)<span class="ecrm-1000">, </span>\(\texttt {[[}\)<span class="ecrm-1000">, </span>\(\texttt {x]}\)<span class="ecrm-1000">, </span>\(\texttt {[x}\)                     </td>
+</tr><tr id="TBL-1-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-1-5-1" style="white-space:nowrap; text-align:left;"> \(\texttt {[x}\)            </td><td class="td11" id="TBL-1-5-2" style="white-space:nowrap; text-align:left;"> \(\texttt {]}\)                  </td>
+</tr></table></div></div>
+<!-- l. 152 --><p class="noindent">Every mask depends on the parser stack, not just the lexer: \(\texttt {]}\) is
+rejected at the start and after \(\texttt {[}\) (an <span class="ectt-1095">inner </span>is still required) but is
+the only admissible token after \(\texttt {[x}\), and \(\texttt {]]}\) is always rejected here
+because no prefix reaches bracket depth two with its inner
+already closed. §<a href="#parser-dwa-construction">5<!-- tex4ht:ref: sec:compilation  --></a> and §<a href="#runtime">6<!-- tex4ht:ref: sec:runtime  --></a> revisit this example to show how the
+compiled automaton produces these masks.
+</p>
+</div>
+<!-- l. 159 --><p class="indent">
+</p>
+<h3 class="sectionHead" id="lexer"><span class="titlemark">3   </span> <a id="x1-70003"></a>Lexer</h3>
+<!-- l. 8 --><p class="noindent">The lexer side records how token bytes scan into grammar-terminal
+sequences. It first fixes a deterministic lexer model, then defines
+execution on a byte fragment, then accounts for partial terminal
+matches and longest-match exclusions.
+</p><!-- l. 13 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="model"><span class="titlemark">3.1   </span> <a id="x1-80003.1"></a>Model</h4>
+<!-- l. 16 --><p class="noindent">Let \(\mathcal B\) be the byte alphabet. We model the lexer as a total DFA \[ \mathcal A_{\mathrm {lex}} = (Q_{\mathrm {lex}},\mathcal B,\delta ,q_0,\bot ,A), \]
+where \(q_0\in Q_{\mathrm {lex}}\) is the initial state, \(\bot \in Q_{\mathrm {lex}}\) is the rejecting state, \(\delta :Q_{\mathrm {lex}}\times \mathcal B\to Q_{\mathrm {lex}}\) is total, \(\delta (\bot ,b)=\bot \), and \(A:Q_{\mathrm {lex}}\to 2^{\mathcal T}\)
+labels each lexer state with the terminals accepted there, with \(A(\bot )=\emptyset \).
+For a byte fragment \(b=b_1\cdots b_n\), the run from state \(q\) is \(q^{(0)}=q,\ q^{(i)}=\delta (q^{(i-1)},b_i)\), and we write
+\(\delta ^*(q,b)=q^{(n)}\).
+</p><!-- l. 31 --><p class="indent">   We adopt a clean-start convention for \(q_0\), under which no
+ordinary lexer transition enters \(q_0\): it is reached only by lexer
+initialization or by explicit reinitialization immediately after a
+terminal match. Thus \(q_0\) marks terminal boundaries. This
+convention can always be enforced by splitting the raw DFA start
+state.
+</p><!-- l. 37 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="execution"><span class="titlemark">3.2   </span> <a id="x1-90003.2"></a>Execution</h4>
+<!-- l. 42 --><p class="noindent">The match operation records the terminals accepted by prefixes
+of this one run, together with the final lexer state. Define \[ \mathrm {Match}(q,b)=(\mu ,q^{(n)}), \qquad \mu (t) = \max \{\,i:1\le i\le n,\;t\in A(q^{(i)})\,\}, \] where \(\mu :\mathcal T\rightharpoonup \{1,\ldots ,n\}\)
+is partial, defined when the set is nonempty. Thus \(\mu (t)\) is the longest
+prefix of \(b\) that matches terminal \(t\) from state \(q\). If the run reaches \(\bot \),
+no later state accepts a terminal, since \(\bot \) is absorbing and \(A(\bot )=\emptyset \). The
+continuation relation is defined by reachability: \[ \mathrm {CanMatch}(q) = \{\,t\in \mathcal T: \exists b\in \mathcal B^*,\; t\in A(\delta ^*(q,b)) \,\}, \] the terminals
+that can be completed from lexer state \(q\), allowing the empty
+continuation.
+</p><!-- l. 66 --><p class="indent">   A byte fragment can contain several completed terminal
+boundaries, or end in the middle of a terminal match. We record
+both possibilities with a branching scan relation \(\mathrm {Scan}(q,b)\subseteq \mathcal T^*\times Q_{\mathrm {lex}}\). It is the least
+relation satisfying two clauses. First, if scanning all of \(b\) from \(q\) does
+not reject, the fragment may be left unemitted: \[ (\epsilon ,\delta ^*(q,b))\in \mathrm {Scan}(q,b) \qquad \text {if }\delta ^*(q,b)\ne \bot . \] Second, let \(\mathrm {Match}(q,b)=(\mu ,-)\). If \(t\in \operatorname {dom}(\mu )\), \(\mu (t)=i\),
+and \(b=cd\) with \(|c|=i\), then for every \((r,q')\in \mathrm {Scan}(q_0,d)\), \[ (tr,q')\in \mathrm {Scan}(q,b). \] This clause emits terminal \(t\), resets
+the lexer to \(q_0\), and continues scanning the remaining suffix. The
+recursion is finite because every emitted terminal consumes a
+nonempty prefix of \(b\).
+</p><!-- l. 85 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="partial-matches"><span class="titlemark">3.3   </span> <a id="x1-100003.3"></a>Partial Matches</h4>
+<!-- l. 88 --><p class="noindent">\(\mathrm {Scan}(q,b)\) records outcomes, each a sequence \(r\) of terminals completed inside
+the fragment together with the lexer state \(q'\) left at the fragment
+boundary. Consider a single match \((r,q')\in \mathrm {Scan}(q,b)\). If scanning ends at \(q'=q_0\), the
+scanned terminal sequence \(r\) is already complete; if the parser
+accepts \(r\), the bytes \(b\) are valid next. If scanning ends in a
+non-boundary state \(q'\ne q_0\), it has stopped in the middle of a partial
+terminal match that straddles the fragment boundary. In this
+case it is not enough for the parser to accept \(r\): it must also accept
+\(rt\) for some \(t\in \mathrm {CanMatch}(q')\) that could complete the partial match. The <span class="ecti-1095">completed</span>
+lexer relation used in Equation (the mask condition) is therefore \[ \mathrm {Lex}(q,b) = \bigcup _{(r,q')\in \mathrm {Scan}(q,b)} \begin {cases} \{r\}, &amp; q'=q_0,\\ \{rt:t\in \mathrm {CanMatch}(q')\}, &amp; q'\ne q_0. \end {cases} \] Each \(r\in \mathrm {Lex}(q,b)\) is a
+complete terminal sequence that scanning \(b\) from \(q\) may yield,
+possibly including a terminal that completes a partial match
+when \(b\) ends mid-terminal, so it is ready for parser-stack
+checking.
+</p><!-- l. 113 --><p class="indent">   In <a href="#x1-6003r1">Example 2.1</a> the terminals are single characters, so
+scanning is immediate: the token \(\texttt {[[}\) scans from \(q_0\) into the terminal
+sequence \(\texttt {[}\,\texttt {[}\), and \(\texttt {x]}\) into \(\texttt {x}\,\texttt {]}\). A two-terminal token thus presents two
+grammar terminals to the parser side inside one decoding
+step.
+</p><!-- l. 119 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="longestmatch-exclusions"><span class="titlemark">3.4   </span> <a id="x1-110003.4"></a>Longest-Match Exclusions</h4>
+<!-- l. 122 --><p class="noindent">We adopt a longest-match convention for the lexer: a terminal is
+emitted only when the same match can no longer be extended.
+For example, an identifier-like match <span class="ectt-1095">ab </span>remains tentative while a
+longer match such as <span class="ectt-1095">abc </span>is still possible.
+</p><!-- l. 127 --><p class="indent"> <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>handles tentative terminal boundaries by splitting
+the runtime configuration. At a tentative boundary where
+terminal \(t\) has matched but the same match can continue
+from lexer state \(q'\), the branch that emits \(t\) records \(t\in e(q')\). This
+declares the branch invalid if a later fragment scanned from \(q'\)
+encounters \(t\), which is exactly the case in which the earlier
+emission would violate longest-match lexing. For a candidate
+fragment \(b\), the longest-match exclusion check is \[ \mathrm {ExclOK}(e,b) \quad \Longleftrightarrow \quad \forall (q',X)\in e:\; \operatorname {dom}(\mu _{q',b})\cap X=\emptyset , \] where \(\mathrm {Match}(q',b)=(\mu _{q',b},-)\). A
+branch passes the check exactly when no excluded terminal is
+matched by the fragment from the lexer state at which the
+exclusion was recorded. How \(e\) is updated is described in
+§<a href="#commit">6.3<!-- tex4ht:ref: sec:runtime-commit  --></a>.
+
+
+</p>
+<h3 class="sectionHead" id="parser-stack-effects"><span class="titlemark">4   </span> <a id="x1-120004"></a>Parser Stack Effects</h3>
+<!-- l. 8 --><p class="noindent">The parser side records, for each terminal, how consuming that
+terminal rewrites the parser stack. This section fixes the
+stack-effect interface, shows how the implementation derives
+effects from GLR tables, describes the corresponding real-time
+GPDA interface, and then composes and projects effects into the
+read-prefix languages used by <span class="eccc1095-"><span class="small-caps">Mask</span></span>.
+</p><!-- l. 14 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stack-effects"><span class="titlemark">4.1   </span> <a id="x1-130004.1"></a>Stack Effects</h4>
+<!-- l. 17 --><p class="noindent">For each terminal \(t\), the parser side records the stack-prefix
+rewrites by which \(t\) can be consumed. These rewrites form a
+stack-effect language \(E_t\).
+</p><!-- l. 20 --><p class="indent">   Let \(\Gamma \) be the parser stack alphabet, write stacks top-first, and
+define \[ \Gamma ^\pm := \{\,p^-,p^+ : p\in \Gamma \,\}. \] A word \[ u^-v^+ \in E_t \] records a rewrite with read prefix \(u\) and
+replacement prefix \(v\). The read prefix is marked negatively, \[ u^- := p_1^-\cdots p_m^-, \] and
+the replacement prefix is marked positively, in push order, \[ v^+ := q_n^+\cdots q_1^+. \] The
+positive block is reversed because stacks are written top-first:
+lower symbols of \(v\) are pushed before its top symbols. Thus \(u^-v^+\)
+denotes \[ u\alpha \mapsto v\alpha \qquad (\alpha \in \Gamma ^*), \] where the top prefix \(u\) is replaced by \(v\) and the remaining
+stack is unchanged.
+</p><!-- l. 46 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stack-effects-from-glr-tables"><span class="titlemark">4.2   </span> <a id="x1-140004.2"></a>Stack Effects from GLR Tables</h4>
+<!-- l. 49 --><p class="noindent">In the implementation, the source parser is GLR, with stack
+symbols \(Q_{\mathrm {LR}}\) given by an IELR(1) table. A shift on terminal \(t\) from
+state \(q\) to state \(q'\) contributes the signed word \[ q^- q^+ q'^+ \in E_t, \] which represents the
+stack rewrite \[ q\alpha \mapsto q' q\alpha . \] A reduction by \(A\to \beta \), with \(|\beta |=k\), does not itself consume \(t\); it
+is selected while \(t\) is the lookahead terminal. If the stack begins
+with \(k\) states above a predecessor state \(p\), the reduction pops those \(k\)
+states, exposes \(p\), follows the goto entry \(g=\mathrm {goto}(p,A)\), and pushes \(g\). Thus, when
+\(\sigma =q_k\cdots q_1p\alpha \), \[ q_k\cdots q_1p\alpha \mapsto gp\alpha . \] The predecessor \(p\) is read because it determines the goto state,
+but it is not removed from the final stack. For a terminal
+\(t\), \(E_t\) contains the signed words obtained by taking a finite
+sequence of reductions chosen with lookahead \(t\), followed by a
+shift on \(t\). It describes exactly which stack prefixes allow
+terminal \(t\) to be consumed, and what stack prefix replaces them
+afterward.
+</p><!-- l. 74 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stack-effects-from-free-gpdas"><span class="titlemark">4.3   </span> <a id="x1-150004.3"></a>Stack Effects from \(\epsilon \)-Free GPDAs</h4>
+<!-- l. 77 --><p class="noindent">The GLR table is one source of terminal stack effects; an \(\epsilon \)-free
+generalized pushdown automaton gives the same information
+directly. Here \(\epsilon \)-free means that every transition consumes one
+grammar terminal. Let \[ M=(P,\mathcal T,\Gamma ,\Delta ,p_0,\gamma _0,F) \] be such a GPDA, with finite transition
+relation \[ \Delta \subseteq P\times \mathcal T\times \Gamma ^*\times P\times \Gamma ^* . \] A transition \((p,t,u,p',v)\in \Delta \) consumes terminal \(t\), changes control from \(p\)
+to \(p'\), and replaces stack prefix \(u\) by \(v\): \[ (p,u\alpha ) \mapsto (p',v\alpha ). \] Equivalently, we can
+fold the control state into the stack alphabet and view the
+transition as a one-terminal stack effect. We require each
+reachable instance of the transition to preserve completability:
+whenever \((p,u\alpha )\) is reachable, the target \((p',v\alpha )\) must be able to reach
+acceptance.
+</p><!-- l. 97 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stackeffect-automata"><span class="titlemark">4.4   </span> <a id="x1-160004.4"></a>Stack-Effect Automata</h4>
+<!-- l. 100 --><p class="noindent">A stack-effect automaton for terminal \(t\) is a finite automaton over \(\Gamma ^\pm \)
+whose accepted language is \(E_t\). The compiler represents each
+stack-effect language by such an automaton.
+</p><!-- l. 104 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="composition"><span class="titlemark">4.5   </span> <a id="x1-170004.5"></a>Composition</h4>
+<!-- l. 107 --><p class="noindent">The language \(E_t\) describes the effect of consuming a single terminal.
+To reason about a sequence of terminals, we compose their
+effects.
+</p><!-- l. 110 --><p class="indent">   Composition is concatenation followed by cancellation: \[ p^+p^-\to \epsilon , \qquad p^+q^-\to \bot \quad (p\ne q). \] A
+matching write-read pair cancels; a mismatch fails.
+</p><!-- l. 118 --><p class="indent">   For \[ x=u^-v^+, \qquad y=w^-z^+, \] write \(\preceq \) for prefix order. Composition compares the written
+prefix \(v\) with the read prefix \(w\): \[ x\odot y := \begin {cases} u^-a^+z^+ &amp; v=wa,\\ u^-a^-z^+ &amp; w=va,\\ \bot &amp; v\not \preceq w \wedge w\not \preceq v. \end {cases} \] The residual \(a\) is positive when it
+was written by \(x\), and negative when it must be read from the
+original stack.
+</p><!-- l. 138 --><p class="indent">   For languages \(E,F\subseteq (\Gamma ^\pm )^*\), define their composition by collecting all
+successful word compositions: \[ E\odot F := \{\,x\odot y : x\in E,\ y\in F\,\}, \] where failed compositions are
+omitted.
+</p><!-- l. 147 --><p class="indent">   For a terminal sequence \(r=t_1\cdots t_k\), \[ E_r := E_{t_1}\odot \cdots \odot E_{t_k}. \] For the empty sequence, \[ E_\epsilon := \{\epsilon \}. \]
+Thus \(E_r\) is the language of net stack effects for consuming
+\(r\).
+</p><!-- l. 157 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="read-projection"><span class="titlemark">4.6   </span> <a id="x1-180004.6"></a>Read Projection</h4>
+<!-- l. 161 --><p class="noindent">Only <span class="eccc1095-"><span class="small-caps">Commit</span> </span>needs to update the stack. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>only needs to
+know whether a terminal sequence \(r\) can be parsed from the
+current stack. We therefore keep only the read prefix: \[ \widehat E_r := \{\,u\in \Gamma ^*: \exists v\in \Gamma ^*,\;u^-v^+\in E_r \,\}. \] Thus \(r\) is
+parseable from stack \(\sigma \) exactly when \(\sigma \) begins with some \(u\in \widehat E_r\): \[ \mathrm {Parseable}(r,\sigma ) \quad \Longleftrightarrow \quad \exists u\in \widehat E_r,\;\exists \alpha :\;\sigma =u\alpha . \] Since a
+token can induce several complete terminal sequences from the
+same lexer state, any parseable sequence suffices. Thus \[ \widehat E_{q,v} := \bigcup _{r\in \mathrm {Lex}(q,\beta (v))}\widehat E_r. \] This is
+the stack-prefix language that the Parser DWA must recognize for
+the pair \((q,v)\).
+</p><!-- l. 188 --><p class="indent">   The token \(\texttt {x]}\) in the running example (§<a href="#x1-6003r1">2.1<!-- tex4ht:ref: ex:brackets  --></a>) shows why
+composition must happen before projection. It scans to the
+two-terminal sequence \(\texttt {x}\,\texttt {]}\), whose terminal effects contain internal
+cancellation that a mask query needs to ignore. Write \(b\) for the
+stack symbol witnessing the unmatched opening bracket
+already present when the token begins, \(p\) for the intermediate
+symbol obtained after parsing <span class="ectt-1095">x </span>as an <span class="ectt-1095">inner</span>, and \(c\) for the
+symbol left after the closing bracket has also been parsed.
+At this level of abstraction, the relevant terminal effects
+are \[ \begin {aligned} \texttt {x}:\quad &amp; b^{-}b^{+}p^{+}\in E_{\texttt {x}},\\ \texttt {]}:\quad &amp; p^{-}b^{-}c^{+}\in E_{\texttt {]}}. \end {aligned} \] The names \(b,p,c\) are illustrative stack-effect operands, not
+concrete table state numbers. Composing the two terminal
+effects concatenates their signed words and cancels each
+pushed symbol when the next effect reads it: \[ \underbrace {b^{-}b^{+}p^{+}}_{\texttt {x}}\; \underbrace {p^{-}b^{-}c^{+}}_{\texttt {]}} \;\xrightarrow {\;p^{+}p^{-}\to \epsilon \;}\; b^{-}b^{+}b^{-}c^{+} \;\xrightarrow {\;b^{+}b^{-}\to \epsilon \;}\; b^{-}c^{+}. \] Thus \(b^-c^+\in E_{\texttt {x]} }\), and \(\widehat E_{\texttt {x]}}=\{\,b\,\}\),
+closed under stack suffixes. The mask query does not need
+to remember the intermediate \(p\), nor the copy of \(b\) that <span class="ectt-1095">x</span>
+read and restored. It only needs to test that \(b\) was already
+present. This is why the running example admits \(\texttt {x]}\) after prefix \(\texttt {[}\):
+the token performs an internal parse-and-close sequence,
+but the surviving stack read is just the pre-existing open
+bracket.
+
+
+</p>
+<h3 class="sectionHead" id="parser-dwa-construction"><span class="titlemark">5   </span> <a id="x1-190005"></a>Parser DWA Construction</h3>
+<!-- l. 8 --><p class="noindent">§<a href="#mask-semantics">2<!-- tex4ht:ref: sec:mask-semantics  --></a> expressed admissibility using three ingredients: lexer scans,
+parser stack effects, and longest-match exclusions. The first two
+are compiled into the Parser DWA queried at runtime. The
+longest-match exclusion ingredient remains a runtime filter,
+handled by the lexer-match table in §<a href="#exclusion-filtering">6.2.2<!-- tex4ht:ref: sec:lexer-match-table  --></a>.
+</p><!-- l. 14 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="boolean-weights"><span class="titlemark">5.1   </span> <a id="x1-200005.1"></a>Boolean Weights</h4>
+<!-- l. 17 --><p class="noindent">A weight is a Boolean mask \[ W\in K:=\mathbb B^{Q_{\mathrm {lex}}\times \mathcal V}. \] Its coordinates are indexed by a
+lexer state \(q\) and a vocabulary token \(v\): \[ W_{qv}\in \mathbb B, \qquad q\in Q_{\mathrm {lex}},\; v\in \mathcal V. \] The weight space \(K\) is an
+idempotent semiring: \(\oplus \) is mask union and \(\otimes \) is mask intersection.
+The operations are pointwise: \[ (W\oplus W')_{qv}=W_{qv}\lor W'_{qv}, \qquad (W\otimes W')_{qv}=W_{qv}\land W'_{qv}. \] The zero element is the all-false
+mask, and the unit is the all-true mask.
+</p><!-- l. 36 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="weighted-automata"><span class="titlemark">5.2   </span> <a id="x1-210005.2"></a>Weighted Automata</h4>
+<!-- l. 39 --><p class="noindent">Weighted automata multiply weights along a run. For the
+deterministic automata used here, the run is described by a
+partial transition function. Each transition on that path
+contributes a weight, and the final state contributes one more
+weight.
+</p><!-- l. 44 --><p class="indent">   Formally, a DWA over alphabet \(\Sigma \) is a tuple \[ \mathcal A=(S,s_0,\tau ,\varphi ), \] where \(S\) is a finite
+state set, \(s_0\in S\) is the start state, \(\tau :S\times \Sigma \rightharpoonup S\times K\) is the partial weighted transition
+function, and \(\varphi :S\to K\) assigns final weights. For a word \(w=a_1\cdots a_m\), write \[ s_0 \xrightarrow {a_1/W_1} s_1 \xrightarrow {a_2/W_2}\cdots \xrightarrow {a_m/W_m} s_m \] when \(\tau (s_{j-1},a_j)=(s_j,W_j)\).
+Evaluation produces a weight \(\llbracket \mathcal A\rrbracket :\Sigma ^*\to K\), \[ \big [\!\big [\mathcal A\big ]\!\big ](w) = W_1\otimes \cdots \otimes W_m\otimes \varphi (s_m). \] If the path is undefined the value
+is \(0\); for \(w=\epsilon \) the empty product is the unit, so \(\llbracket \mathcal A\rrbracket (\epsilon )=\varphi (s_0)\). Since weights are
+masks over lexer-state/token pairs, a pair appears in \(\llbracket \mathcal A\rrbracket (w)\) exactly
+when it appears in every transition weight along the path and in
+the final weight.
+</p><!-- l. 70 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="terminal-dwa"><span class="titlemark">5.3   </span> <a id="x1-220005.3"></a>Terminal DWA</h4>
+<!-- l. 73 --><p class="noindent">The parser construction reasons about terminal sequences, but
+the model proposes vocabulary tokens. The Terminal DWA is the
+compressed weighted representation of this translation. Recall
+that, for lexer state \(q\) and token \(v\), \[ \mathrm {Lex}(q,\beta (v))\subseteq \mathcal T^* \] is the set of complete terminal
+sequences obtained by scanning \(\beta (v)\) from \(q\). The automaton is defined
+by \[ \big [\!\big [\mathcal T_{\mathrm {DWA}}\big ]\!\big ](r)_{qv}=1 \quad \Longleftrightarrow \quad r\in \mathrm {Lex}(q,\beta (v)). \] Thus, given a terminal sequence \(r\), the Terminal DWA returns
+the mask of lexer-state/token pairs that can realize \(r\) exactly. It is
+compressed because the indexed family \(\{\mathrm {Lex}(q,\beta (v))\}_{q,v}\) is represented by one
+weighted automaton.
+</p><!-- l. 91 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="parser-dwa"><span class="titlemark">5.4   </span> <a id="x1-230005.4"></a>Parser DWA</h4>
+<!-- l. 95 --><p class="noindent">The Parser DWA is the runtime automaton walked over
+parser-stack prefixes. Its contract is \[ \big [\!\big [\mathcal P_{\mathrm {DWA}}\big ]\!\big ](\rho )_{qv}=1 \quad \Longleftrightarrow \quad \rho \in \widehat E_{q,v}. \] Recall from §<a href="#read-projection">4.6<!-- tex4ht:ref: sec:read-projection  --></a> that
+the token-specific read-prefix language is \[ \widehat E_{q,v} := \bigcup _{r\in \mathrm {Lex}(q,\beta (v))} \widehat E_r . \] Equivalently,
+\[ \begin {aligned} \rho \in \widehat E_{q,v} &amp;\quad \Longleftrightarrow \quad \exists r: r\in \mathrm {Lex}(q,\beta (v)) \;\land \; \rho \in \widehat E_r \\ &amp;\quad \Longleftrightarrow \quad \exists r: \big [\!\big [\mathcal T_{\mathrm {DWA}}\big ]\!\big ](r)_{qv}=1 \;\land \; \rho \in \widehat E_r . \end {aligned} \]
+</p><!-- l. 128 --><p class="indent">   The construction realizes this equivalence by substituting
+parser-side automata into Terminal-DWA paths. For each
+terminal \(t\), let \(\mathcal A_t\) be the stack-effect automaton for \(E_t\). It accepts
+signed words \(u^-v^+\), one for each stack rewrite represented in \(E_t\).
+Substituting the family \(\{\mathcal A_t\}_{t\in \mathcal T}\) into \(\mathcal T_{\mathrm {DWA}}\) gives a weighted automaton over
+signed stack symbols. Each Terminal-DWA transition \(x\xrightarrow {t/W}y\) is replaced
+by a fresh copy of \(\mathcal A_t\): the copy’s start and accepting states are
+identified with \(x\) and \(y\), and every copied transition carries
+weight \(W\). A path through the substituted automaton chooses a
+Terminal-DWA terminal sequence \(r=t_1\cdots t_k\), one accepting path in each \(\mathcal A_{t_i}\),
+and carries the product of the Terminal-DWA weights on the
+original terminal path.
+</p><!-- l. 141 --><p class="indent">   For example, suppose a Terminal-DWA path contains \[ x_0 \xrightarrow {t_1/W_1} x_1 \xrightarrow {t_2/W_2} x_2 . \] Let \(\mathcal A_{t_1}\)
+and \(\mathcal A_{t_2}\) be the stack-effect automata substituted for \(t_1\) and \(t_2\).
+Suppose \(\mathcal A_{t_1}\) has an accepting path \[ s_{1,0} \xrightarrow {p^-} s_{1,1} \xrightarrow {q^+} s_{1,2}, \] and \(\mathcal A_{t_2}\) has an accepting path \[ s_{2,0} \xrightarrow {q^-} s_{2,1} \xrightarrow {r^+} s_{2,2}. \]
+Substitution identifies the start and accepting states of each
+copied automaton with the endpoints of the Terminal-DWA edge
+it replaces: \(s_{1,0}\) with \(x_0\), \(s_{1,2}\) with \(x_1\), \(s_{2,0}\) with \(x_1\), and \(s_{2,2}\) with \(x_2\). It also gives
+each copied edge the weight of the Terminal-DWA edge
+being replaced. Thus these accepting paths produce \[ x_0 \xrightarrow {p^-/W_1} s_{1,1} \xrightarrow {q^+/W_1} x_1 \xrightarrow {q^-/W_2} s_{2,1} \xrightarrow {r^+/W_2} x_2 . \] This
+path reads the signed word \[ p^-q^+q^-r^+ . \] The adjacent \(q^+q^-\) pair is internal
+to the terminal sequence: \(q\) is pushed by the first terminal
+effect and immediately read by the second. Cancellation
+removes this pair: \[ q^+q^-\to \epsilon . \] Thus the whole signed word reduces to \[ p^-q^+q^-r^+ \;\longrightarrow \; p^-r^+ . \] At
+the automaton level, the two cancelled edges are replaced
+by an \(\epsilon \)-edge whose weight is the product of their weights: \[ x_0 \xrightarrow {p^-/W_1} s_{1,1} \xrightarrow {\epsilon /(W_1\otimes W_2)} s_{2,1} \xrightarrow {r^+/W_2} x_2 . \]
+Since \(\otimes \) is mask intersection, this \(\epsilon \)-edge records exactly the
+lexer-state/token pairs that survive both sides of the cancelled
+stack action.
+</p><!-- l. 214 --><p class="indent">   A mismatch is handled by the same local check, but discards
+the path. In the mirrored case, keep the first stack-effect path the
+same, \[ s_{1,0} \xrightarrow {p^-} s_{1,1} \xrightarrow {q^+} s_{1,2}, \] but suppose the second automaton instead reads a
+different symbol \(h\ne q\): \[ s_{2,0} \xrightarrow {h^-} s_{2,1} \xrightarrow {r^+} s_{2,2}. \] Substitution then produces \[ x_0 \xrightarrow {p^-/W_1} s_{1,1} \xrightarrow {q^+/W_1} x_1 \xrightarrow {h^-/W_2} s_{2,1} \xrightarrow {r^+/W_2} x_2 , \] which reads \[ p^-q^+h^-r^+ . \] Now
+the boundary pair is \(q^+h^-\). Since the pushed symbol and the read
+symbol differ, cancellation fails: \[ q^+h^-\to \bot \qquad (h\ne q), \] so the whole substituted path is
+discarded.
+</p><!-- l. 255 --><p class="indent">   After all cancellations, every surviving path has normal form \[ u^-v^+. \]
+The read prefix \(u\) is the part of the parser stack that had to be
+present before \(r\) began; the write prefix \(v\) is the stack prefix left
+afterward. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>only checks admissibility, so the construction
+projects each surviving path to its read side \(u\), preserving the
+accumulated weight. Thus the substituted paths for \(r\), after
+cancellation and projection, accept exactly the read-prefix
+language \(\widehat E_r\).
+</p><!-- l. 266 --><p class="indent">   If several substituted paths project to the same read-prefix
+path, their weights are unioned with \(\oplus \). The result is a weighted
+automaton over parser-stack symbols whose paths read prefixes \(\rho \),
+and whose weights record the \((q,v)\) pairs for which some induced
+terminal sequence can be parsed from \(\rho \). The Parser DWA is the
+deterministic runtime form of this weighted automaton; the
+boundedness assumptions that make it finite are stated in
+§<a href="#finiteness-and-scope">8<!-- tex4ht:ref: sec:finiteness-scope  --></a>.
+</p><!-- l. 274 --><p class="indent">   For any lexer-state/token pair \((q,v)\), the read-prefix automaton for \(\widehat E_{q,v}\)
+can be recovered from the Parser DWA by retaining exactly the
+transitions whose weights contain \((q,v)\), and accepting exactly the
+states whose final weights contain \((q,v)\). Thus a single Parser DWA
+stores the whole family of read-prefix automata: common states
+and transitions are represented once, while weights record which
+lexer-state/token pairs use each piece.
+
+
+</p>
+<h3 class="sectionHead" id="runtime"><span class="titlemark">6   </span> <a id="x1-240006"></a>Runtime</h3>
+<!-- l. 7 --><p class="noindent">The Parser DWA, the lexer-match table, and the stack-effect
+automata are all compiled once per grammar and vocabulary.
+The runtime stores compact parser configurations, answers <span class="eccc1095-"><span class="small-caps">Mask</span></span>
+by walking graph-structured stacks through the Parser DWA, and
+advances state with <span class="eccc1095-"><span class="small-caps">Commit</span></span>.
+</p><!-- l. 12 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="runtime-state1"><span class="titlemark">6.1   </span> <a id="x1-250006.1"></a>Runtime State</h4>
+<!-- l. 15 --><p class="noindent">After each generated prefix, the runtime stores the configuration
+set \(C\) of §<a href="#runtime-state">2.2<!-- tex4ht:ref: sec:constraint-state  --></a> in a compact form: graph-structured parser
+stacks grouped by lexer state, with longest-match exclusions
+attached to stack branches. Formally it is a finite map \[ S:Q_{\mathrm {lex}}\rightharpoonup \mathrm {GSS}(Q_{\mathrm {LR}},\mathcal E), \]
+from lexer states to graph-structured parser stacks. Each
+branch of a graph-structured stack represents one parser
+stack and carries the longest-match exclusion map \(e\in \mathcal E\) for that
+branch. Enumerating all branches of all stacks in \(S\), together
+with the lexer-state key of each map entry, gives back the
+configuration set \[ C\subseteq Q_{\mathrm {lex}}\times Q_{\mathrm {LR}}^*\times \mathcal E \] of §<a href="#runtime-state">2.2<!-- tex4ht:ref: sec:constraint-state  --></a>. Thus \(S\) compactly represents \(C\).
+The graph structure shares common stack suffixes, but this
+sharing is purely representational: a mask query has the
+same semantics as checking each represented configuration
+separately.
+</p><!-- l. 36 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="mask"><span class="titlemark">6.2   </span> <a id="x1-260006.2"></a>Mask</h4>
+<!-- l. 39 --><p class="noindent">A mask query computes \(\mathrm {Mask}_{\mathrm {rt}}(C)\) from the compact runtime state \(S\). For a
+single represented configuration \((q,\sigma ,e)\), Equation (the mask condition) says that token \(v\)
+is admissible when it passes the longest-match exclusion
+check and some terminal sequence induced by \(\beta (v)\) is parseable
+from \(\sigma \). By the definition of \(\widehat E_{q,v}\), the parser-side condition is
+equivalently \[ \exists \rho ,\alpha :\; \sigma =\rho \alpha \;\land \; \rho \in \widehat E_{q,v}, \] and the Parser DWA is the compiled form of
+this prefix test: \(\llbracket \mathcal P_{\mathrm {DWA}}\rrbracket (\rho )_{qv}=1 \Leftrightarrow \rho \in \widehat E_{q,v}\). The mask query uses this equivalence by
+walking the represented stack prefixes through the Parser
+DWA.
+</p><!-- l. 56 --><p class="noindent">
+</p>
+<h5 class="subsubsectionHead" id="shared-gss-walk"><span class="titlemark">6.2.1   </span> <a id="x1-270006.2.1"></a>Shared GSS Walk</h5>
+<!-- l. 59 --><p class="noindent">The runtime then walks the active graph-structured stacks
+through the Parser DWA. Suppose a work item has reached
+Parser-DWA state \(x\) with accumulator \(A\). The stack prefix read
+so far contributes \(A\otimes \varphi (x)\) to the output mask. If the next stack
+symbol is \(p\) and \(\tau (x,p)=(y,W)\), then the successor work item has state \(y\) and
+accumulator \(A\otimes W\). Undefined transitions and empty accumulators
+are discarded. The query unions all contributions over all
+prefixes of all represented stacks and all active lexer-state
+entries. The resulting \(Q_{\mathrm {lex}}\times \mathcal V\) mask is projected to a vocabulary mask
+by keeping token \(v\) whenever \(v\) appears in any lexer-state
+row.
+</p><!-- l. 70 --><p class="indent">   The graph-structured stack implements this prefix walk
+without enumerating every stack. When several paths reach the
+same GSS node and Parser-DWA state, their accumulators are
+unioned with \(\oplus \) before the shared suffix is explored. This preserves
+the semantics above: the remaining computation depends only on
+the GSS node, the Parser-DWA state, and the accumulated
+surviving token pairs.
+</p><!-- l. 76 --><p class="indent">   Each branch contributes only its own \(q\)-row; carrying
+the full \(Q_{\mathrm {lex}}\times \mathcal V\) domain lets a single Parser DWA serve all lexer
+states at once, and the final projection unions the surviving
+rows.
+</p><!-- l. 80 --><p class="indent">   Collecting these terms gives the per-query cost model. A
+mask query is one Parser-DWA walk over the active stack
+prefixes, and its work is bounded by the number of distinct
+GSS-node/Parser-DWA-state pairs the walk visits times the
+bounded per-terminal read depth, plus the weight operations
+performed along the way. GSS sharing unions paths that agree on
+a node/state pair, so each pair is explored once, and the weight
+operations are costed by the range count of the masks combined
+rather than by the vocabulary size \(|\mathcal V|\) (§<a href="#implementation">9<!-- tex4ht:ref: sec:implementation-notes  --></a>). The query never
+performs a dense per-token scan over \(\mathcal V\): its cost tracks the local
+stack geometry and the structure of the surviving masks, not the
+size of the vocabulary.
+</p><!-- l. 91 --><p class="indent">   In <a href="#x1-6003r1">Example 2.1</a>, after committing \(\texttt {[}\) the runtime holds a short
+stack prefix at lexer state \(q_0\). Walking that prefix through the
+Parser DWA accumulates the row that admits exactly \(\{\texttt {[},\texttt {x},\texttt {[[}, \texttt {x]},\texttt {[x}\}\), the
+second line of the table in <a href="#x1-6003r1">Example 2.1</a>, while \(\texttt {]}\) and \(\texttt {]]}\) receive
+empty weights along the walk and are dropped.
+</p><!-- l. 98 --><p class="noindent">
+</p>
+<h5 class="subsubsectionHead" id="exclusion-filtering"><span class="titlemark">6.2.2   </span> <a id="x1-280006.2.2"></a>Exclusion Filtering</h5>
+<!-- l. 102 --><p class="noindent">First account for longest-match exclusions. The runtime uses the
+precomputed lexer-match table \[ M(q,t) = \{\,v\in \mathcal V: t\in \operatorname {dom}(\mu _{q,\beta (v)})\,\}, \qquad \mathrm {Match}(q,\beta (v))=(\mu _{q,\beta (v)},-). \] Thus \(M(q,t)\) contains exactly the
+vocabulary tokens whose strings match terminal \(t\) when scanned
+from lexer state \(q\). For a branch with longest-match exclusion map
+\(e\), define \[ X(e) = \mathcal V \setminus \bigcup _{q'\in \operatorname {dom}(e)}\;\bigcup _{t\in e(q')} M(q',t). \] A token lies in \(X(e)\) exactly when it passes the longest-match
+exclusion check for that branch. For a branch under lexer state \(q\),
+the initial accumulator is the mask \(A\in K\) whose \(q\)-row is \(X(e)\) and whose
+other rows are empty.
+</p><!-- l. 126 --><p class="indent">   The same branch-local filter is applied before the Parser-DWA
+contribution is projected to vocabulary tokens. Exclusion filtering
+is therefore a mask-side operation: it removes tokens whose bytes
+would prove that an earlier tentative terminal was emitted too
+early under longest-match lexing.
+</p><!-- l. 131 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="commit"><span class="titlemark">6.3   </span> <a id="x1-290006.3"></a>Commit</h4>
+<!-- l. 134 --><p class="noindent"><span class="eccc1095-"><span class="small-caps">Commit</span> </span>updates \(S\) after a byte fragment \(b\) has been accepted. If \(S\)
+represents the configurations reachable after prefix \(u\), then after
+committing \(b\) the new state should represent the configurations
+reachable after prefix \(ub\). During ordinary decoding \(b=\beta (v)\) for the sampled
+token \(v\); during prefill the same operation is applied to prompt
+bytes or partial-completion bytes.
+</p><!-- l. 141 --><p class="indent"> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>starts from each active lexer-state entry in \(S\). For each
+represented branch, it scans \(b\) from that lexer state. Scanner
+branches that enter the rejecting state are discarded. Successful
+scanner branches may emit zero or more completed terminals and
+may end either at the boundary state \(q_0\) or in a non-boundary lexer
+state.
+</p><!-- l. 147 --><p class="indent">   Longest-match exclusions are checked during this scan. If the
+branch carries \(t\in e(q')\), and scanning the fragment from lexer state \(q'\)
+matches terminal \(t\), then that branch is discarded. Otherwise the
+longest-match exclusion map is carried forward along the scanner
+branch, with entries updated to refer to the lexer state reached
+after the scanned fragment.
+</p><!-- l. 153 --><p class="indent"> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>then processes the completed terminal matches
+encountered while scanning \(b\). For each emitted terminal \(t\), it
+advances the corresponding graph-structured stacks according to
+the stack-effect relation \(E_t\). Each applicable rewrite \(u\xrightarrow {t}v\) replaces stack
+prefix \(u\) by stack prefix \(v\), preserving the remaining stack suffix. If
+no rewrite applies, that branch is discarded; if several apply, the
+graph-structured stack represents the resulting branches and
+shares their common suffixes.
+</p><!-- l. 161 --><p class="indent">   If scanning ends at \(q_0\), the emitted terminal sequence is
+complete, so the resulting stacks are stored under lexer state \(q_0\). If
+scanning ends in a non-boundary state \(q'\ne q_0\), the fragment has ended
+in the middle of a possible terminal. The branch is retained only
+if some terminal in \(\mathrm {CanMatch}(q')\) can still be parsed from the current stacks.
+This is the commit-time version of the completion check
+used in \(\mathrm {Lex}(q,b)\): partial lexer matches are kept only when they can
+still lead to a valid parser continuation. Finally, if a branch
+emits terminal \(t\) while the same match can still continue to a
+lexer state \(q'\), the emitted branch records the longest-match
+exclusion \(t\in e(q')\); if a later fragment scanned from \(q'\) encounters
+\(t\), that branch is discarded, which enforces longest-match
+lexing.
+
+
+</p>
+<h3 class="sectionHead" id="correctness"><span class="titlemark">7   </span> <a id="x1-300007"></a>Correctness</h3>
+<!-- l. 8 --><p class="noindent">This section collects the proof obligations behind exact masking.
+The statement is intentionally modular: lexer execution, parser
+stack effects, read projection, Parser-DWA evaluation, mask
+aggregation, and commit preservation each correspond to one
+construction used earlier.
+</p><!-- l. 13 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="main-theorem"><span class="titlemark">7.1   </span> <a id="x1-310007.1"></a>Main Theorem</h4>
+<div class="newtheorem">
+<!-- l. 16 --><p class="noindent"><span class="head">
+<a id="x1-31001r1"></a>
+<span class="ecbx-1095">Theorem 7.1 </span>(Exact runtime masks)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">Let a grammar and
+</span><span class="ecti-1095">vocabulary  satisfy  the  finiteness  conditions  of  §</span><a href="#finiteness-and-scope"><span class="ecti-1095">8</span><!-- tex4ht:ref: sec:finiteness-scope  --></a><span class="ecti-1095">.  If  the
+</span><span class="ecti-1095">runtime state represents exactly the viable configurations after
+</span><span class="ecti-1095">consumed byte prefix </span>\(u\)<span class="ecti-1095">, then </span><span class="eccc1095-"><span class="small-caps">Mask</span> </span><span class="ecti-1095">returns </span>\(\mathrm {Mask}_{L}(u)\)<span class="ecti-1095">. After </span><span class="eccc1095-"><span class="small-caps">Commit</span></span>
+<span class="ecti-1095">of any accepted byte fragment </span>\(b\)<span class="ecti-1095">, the updated state represents
+</span><span class="ecti-1095">exactly the viable configurations after </span>\(ub\)<span class="ecti-1095">.</span>
+</p>
+</div>
+<!-- l. 24 --><p class="indent">
+</p><!-- l. 26 --><p class="noindent">The proof is by composition of the lemmas below. The mask half
+reduces token validity to lexer outcomes and read-projected
+stack prefixes; the commit half is an induction over accepted
+fragments.
+</p><!-- l. 31 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="lexer-correspondence"><span class="titlemark">7.2   </span> <a id="x1-320007.2"></a>Lexer Correspondence</h4>
+<div class="newtheorem">
+<!-- l. 34 --><p class="noindent"><span class="head">
+<a id="x1-32001r2"></a>
+<span class="ecbx-1095">Lemma 7.2 </span>(Lexer correspondence)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">For any lexer state </span>\(q\)
+<span class="ecti-1095">and  byte  fragment  </span>\(b\)<span class="ecti-1095">,  the  relation  </span>\(\mathrm {Scan}(q,b)\)  <span class="ecti-1095">enumerates  exactly  the
+</span><span class="ecti-1095">terminal  sequences  emitted  inside  </span>\(b\)  <span class="ecti-1095">together  with  the  lexer
+</span><span class="ecti-1095">state left at the fragment boundary. The completed relation</span>
+\(\mathrm {Lex}(q,b)\) <span class="ecti-1095">is exactly the set of complete terminal sequences that may
+</span><span class="ecti-1095">be  relevant  to  parser  checking  after  accounting  for  partial
+</span><span class="ecti-1095">matches.</span>
+</p>
+</div>
+<!-- l. 41 --><p class="indent">
+</p><!-- l. 43 --><p class="noindent">This follows directly from the two clauses defining \(\mathrm {Scan}\): leaving a
+non-rejecting suffix unemitted, or emitting a nonempty accepted
+terminal prefix and restarting at the boundary state. The
+partial-match clause adds precisely the terminals in \(\mathrm {CanMatch}\) when the
+fragment ends away from a terminal boundary.
+</p><!-- l. 50 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stackeffect-correspondence"><span class="titlemark">7.3   </span> <a id="x1-330007.3"></a>Stack-Effect Correspondence</h4>
+<div class="newtheorem">
+<!-- l. 53 --><p class="noindent"><span class="head">
+<a id="x1-33001r3"></a>
+<span class="ecbx-1095">Lemma 7.3 </span>(Stack-effect correspondence)<span class="ecbx-1095">.</span>
+</span> <span class="ecti-1095">For  each  terminal  </span>\(t\)<span class="ecti-1095">,  the  language  </span>\(E_t\)  <span class="ecti-1095">contains  exactly  the
+</span><span class="ecti-1095">signed words </span>\(u^-v^+\) <span class="ecti-1095">representing stack-prefix rewrites reachable by
+</span><span class="ecti-1095">the source parser while consuming </span>\(t\)<span class="ecti-1095">. For a terminal sequence</span>
+\(r\)<span class="ecti-1095">, the composed language </span>\(E_r\) <span class="ecti-1095">contains exactly the signed words
+</span><span class="ecti-1095">representing rewrites reachable by consuming </span>\(r\)<span class="ecti-1095">.</span>
+</p>
+</div>
+<!-- l. 60 --><p class="indent">
+</p><!-- l. 62 --><p class="noindent">For GLR tables, each element of \(E_t\) is a finite reduction run
+selected under lookahead \(t\), followed by a shift of \(t\), encoded as a
+signed word. For an \(\epsilon \)-free GPDA, \(E_t\) is induced directly by
+the terminal-labelled transition relation. Composition with
+cancellation preserves precisely those adjacent effects whose
+pushed and read symbols agree.
+</p><!-- l. 69 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="readprojection-lemma"><span class="titlemark">7.4   </span> <a id="x1-340007.4"></a>Read-Projection Lemma</h4>
+<div class="newtheorem">
+<!-- l. 72 --><p class="noindent"><span class="head">
+<a id="x1-34001r4"></a>
+<span class="ecbx-1095">Lemma 7.4 </span>(Read projection)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">For any terminal sequence </span>\(r\)
+<span class="ecti-1095">and parser stack </span>\(\sigma \)<span class="ecti-1095">, </span>\(\mathrm {Parseable}(r,\sigma )\) <span class="ecti-1095">holds if and only if </span>\(\sigma \) <span class="ecti-1095">has a prefix in </span>\(\widehat E_r\)<span class="ecti-1095">.</span>
+</p>
+</div>
+<!-- l. 77 --><p class="indent">
+</p><!-- l. 79 --><p class="noindent">By definition, \(\widehat E_r\) forgets only the replacement prefix \(v\) in a signed
+effect \(u^-v^+\in E_r\); it retains exactly the prefix \(u\) that must already be present
+on the stack before \(r\) can be consumed.
+</p><!-- l. 84 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="parserdwa-lemma"><span class="titlemark">7.5   </span> <a id="x1-350007.5"></a>Parser-DWA Lemma</h4>
+<div class="newtheorem">
+<!-- l. 87 --><p class="noindent"><span class="head">
+<a id="x1-35001r5"></a>
+<span class="ecbx-1095">Lemma 7.5 </span>(Parser-DWA contract)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">For every stack prefix</span>
+\(\rho \)<span class="ecti-1095">, lexer state </span>\(q\)<span class="ecti-1095">, and token </span>\(v\)<span class="ecti-1095">, </span>\[ \big [\!\big [\mathcal P_{\mathrm {DWA}}\big ]\!\big ](\rho )_{qv}=1 \quad \Longleftrightarrow \quad \rho \in \widehat E_{q,v}. \]
+</p>
+</div>
+<!-- l. 95 --><p class="indent">
+</p><!-- l. 97 --><p class="noindent">The Terminal DWA supplies exactly the terminal sequences
+that token \(v\) can produce from lexer state \(q\), together with
+the Boolean weights identifying those \((q,v)\) pairs. Substitution
+inserts the one-terminal stack-effect automata along these
+terminal paths. Cancellation preserves exactly the successful
+composed stack effects, discarding paths with mismatched
+push/read pairs, and projection keeps exactly their read prefixes.
+Determinization preserves the resulting weighted language,
+while \(\oplus \) unions alternative terminal sequences and alternative
+stack-effect paths. Hence the \((q,v)\) coordinate accepts precisely
+\(\widehat E_{q,v}\).
+</p><!-- l. 108 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="mask-lemma"><span class="titlemark">7.6   </span> <a id="x1-360007.6"></a>Mask Lemma</h4>
+<div class="newtheorem">
+<!-- l. 111 --><p class="noindent"><span class="head">
+<a id="x1-36001r6"></a>
+<span class="ecbx-1095">Lemma 7.6 </span>(Mask computation)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">For   any   represented
+</span><span class="ecti-1095">configuration set </span>\(C\)<span class="ecti-1095">, the runtime walk of §</span><a href="#mask"><span class="ecti-1095">6.2</span><!-- tex4ht:ref: sec:runtime-mask  --></a> <span class="ecti-1095">computes </span>\(\mathrm {Mask}_{\mathrm {rt}}(C)\)<span class="ecti-1095">.</span>
+</p>
+</div>
+<!-- l. 115 --><p class="indent">
+</p><!-- l. 117 --><p class="noindent">For a single branch, the initial accumulator applies longest-match
+exclusions; then the Parser-DWA walk contributes exactly the
+tokens whose required read prefix matches some prefix of
+the represented stack. Unioning over GSS branches and
+lexer-state rows is exactly the existential quantification in
+\(\mathrm {Mask}_{\mathrm {rt}}\).
+</p><!-- l. 124 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="commit-invariant"><span class="titlemark">7.7   </span> <a id="x1-370007.7"></a>Commit Invariant</h4>
+<div class="newtheorem">
+<!-- l. 127 --><p class="noindent"><span class="head">
+<a id="x1-37001r7"></a>
+<span class="ecbx-1095">Proposition 7.7 </span>(Runtime invariant)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">Let  </span>\(S\)  <span class="ecti-1095">represent  the
+</span><span class="ecti-1095">configuration set </span>\(C\) <span class="ecti-1095">reachable after prefix </span>\(u\)<span class="ecti-1095">. Then the mask query
+</span><span class="ecti-1095">of §</span><a href="#mask"><span class="ecti-1095">6.2</span><!-- tex4ht:ref: sec:runtime-mask  --></a> <span class="ecti-1095">computes </span>\(\mathrm {Mask}_{\mathrm {rt}}(C)\)<span class="ecti-1095">, and after  </span><span class="eccc1095-"><span class="small-caps">Commit</span> </span><span class="ecti-1095">of a fragment </span>\(b\)<span class="ecti-1095">, the
+</span><span class="ecti-1095">updated state represents the configuration set reachable after</span>
+\(ub\)<span class="ecti-1095">. Consequently </span>\(\mathrm {Mask}_{\mathrm {rt}}(C)=\mathrm {Mask}_L(u)\) <span class="ecti-1095">holds at every decoding step.</span>
+</p>
+</div>
+<!-- l. 135 --><p class="indent">
+</p><!-- l. 137 --><p class="noindent">The base case is the initial lexer state and parser start stack. For
+the inductive step, <span class="eccc1095-"><span class="small-caps">Commit</span> </span>mirrors lexer execution, terminal
+stack-effect rewrites, partial-match retention, and longest-match
+exclusion updates. Thus it drops no viable configuration and adds
+no unreachable one. Combined with the mask lemma, the
+invariant proves <a href="#x1-31001r1">Theorem 7.1</a>.
+
+
+</p>
+<h3 class="sectionHead" id="finiteness-and-scope"><span class="titlemark">8   </span> <a id="x1-380008"></a>Finiteness and Scope</h3>
+<!-- l. 7 --><p class="noindent">The construction is exact for the parser interface it compiles, but
+it is not an unbounded parser packaged as a finite automaton.
+This section states the finitary assumptions and the scope
+boundaries they imply.
+</p><!-- l. 11 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="bounded-terminal-effects"><span class="titlemark">8.1   </span> <a id="x1-390008.1"></a>Bounded Terminal Effects</h4>
+<div class="newtheorem">
+<!-- l. 14 --><p class="noindent"><span class="head">
+<a id="x1-39001r1"></a>
+<span class="ecbx-1095">Lemma 8.1 </span>(Finiteness)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">Suppose              the
+</span><span class="ecti-1095">grammar is normalized to remove right recursion and hidden
+</span><span class="ecti-1095">left recursion (§</span><a href="#grammar-normalization"><span class="ecti-1095">8.2</span><!-- tex4ht:ref: sec:grammar-normalization  --></a><span class="ecti-1095">), and suppose the vocabulary is fixed. Then
+</span><span class="ecti-1095">the token-level read-prefix languages </span>\(\widehat E_{q,v}\) <span class="ecti-1095">have bounded depth, and
+</span><span class="ecti-1095">the Parser DWA has bounded stack-read depth.</span>
+</p>
+</div>
+<!-- l. 20 --><p class="indent">
+</p><!-- l. 22 --><p class="noindent">The load-bearing assumption is not that the whole parser is
+finite-state. It is that consuming one terminal has a finite,
+bounded stack effect. In the evaluated GLR implementation,
+grammar normalization gives this property. A GPDA source may
+also provide it directly through its finite terminal-consuming
+transitions.
+</p><!-- l. 27 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="grammar-normalization"><span class="titlemark">8.2   </span> <a id="x1-400008.2"></a>Grammar Normalization</h4>
+<!-- l. 30 --><p class="noindent">The compiler applies several normalization passes before
+stack-effect automata are built. The key step is to remove right
+recursion and hidden left recursion. For a GLR parser of a CFG
+without right and hidden left recursion, Aycock et al. [<a href="#Xaycock2001faster">1</a>] show
+that the number of consecutive reductions between the shifts of
+two adjacent symbols is bounded by a grammar constant. This
+bounds the reduction runs that contribute to a one-terminal stack
+effect.
+</p><!-- l. 37 --><p class="indent">   Other normalization passes serve more local engineering
+purposes. Nullable nonterminals are eliminated to avoid
+zero-length reductions, and long productions are split so that
+reductions pop through several shallower advance steps rather
+than one deep pop concentrated into a single step.
+</p><!-- l. 42 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="why-the-read-depth-is-bounded"><span class="titlemark">8.3   </span> <a id="x1-410008.3"></a>Why the Read Depth Is Bounded</h4>
+<!-- l. 45 --><p class="noindent">The boundedness argument has three parts.
+</p><!-- l. 47 --><p class="indent">   First, each one-terminal stack effect has bounded read and
+write prefixes. In the GLR construction, an element of \(E_t\) is a
+bounded reduction run chosen with lookahead \(t\), followed by
+one shift of \(t\). Hence every signed word \(u^-v^+\in E_t\) has bounded read
+and write length. In a finite \(\epsilon \)-free GPDA source, the same
+property follows from the finite transition relation: each
+transition consumes one terminal and rewrites finite stack
+strings.
+</p><!-- l. 55 --><p class="indent">   Second, token scans are finite. \(\mathrm {Lex}(q,\beta (v))\) is computed by running the
+lexer DFA over the fixed byte string \(\beta (v)\), so each token induces
+finitely many complete terminal sequences, each of bounded
+length.
+</p><!-- l. 59 --><p class="indent">   Third, composition and cancellation do not introduce
+unbounded reads. Composing the bounded terminal effects along
+a token-induced terminal sequence concatenates their signed
+words and applies only the reductions \(p^{+}p^{-}\to \epsilon \) and \(p^{+}q^{-}\to \bot \); neither rule
+lengthens a word. The read prefix of a composite effect is
+therefore bounded by the number of terminals in the token
+sequence times the one-terminal read bound. The read projection \(\widehat E_r\)
+keeps only those bounded prefixes. Thus every \(\widehat E_{q,v}\) has bounded
+depth, and the Parser DWA reads only a bounded stack prefix at
+runtime.
+</p><!-- l. 69 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="-moves"><span class="titlemark">8.4   </span> <a id="x1-420008.4"></a>\(\epsilon \)-Moves</h4>
+<!-- l. 72 --><p class="noindent">If a source parser contains \(\epsilon \)-moves, those moves must be
+summarized before this interface applies. The compiler consumes
+one-terminal stack effects, so stack changes that occur without
+consuming a terminal must be folded into the surrounding
+terminal-consuming effects. The summarized effects must again
+have a finite, bounded representation.
+</p><!-- l. 78 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="fixed-vocabulary"><span class="titlemark">8.5   </span> <a id="x1-430008.5"></a>Fixed Vocabulary</h4>
+<!-- l. 81 --><p class="noindent">The compiled objects depend on the vocabulary. The Terminal
+DWA is indexed by token byte strings \(\beta (v)\), and Parser-DWA weights
+are Boolean masks over \(Q_{\mathrm {lex}}\times \mathcal V\). Changing the tokenizer or vocabulary
+therefore changes the scan relation and the Parser-DWA weights.
+In serving deployments this is normally amortized over a fixed
+model and tokenizer; per-request tokenizer changes require
+recompilation.
+</p><!-- l. 88 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="unsupported-parser-models"><span class="titlemark">8.6   </span> <a id="x1-440008.6"></a>Unsupported Parser Models</h4>
+<!-- l. 91 --><p class="noindent">The construction assumes an incremental parser whose
+configurations represent prefixes that can still be extended to
+complete strings. A bare PDA or prefix-rewriting transition
+system may recognize the same complete language while exposing
+nonviable intermediate configurations; such configurations should
+be trimmed before effects are used. Parsers with unbounded
+terminal effects, unsummarized \(\epsilon \)-moves, dynamically changing
+vocabularies, or context-sensitive side conditions such as type
+checking and uniqueness are outside the exact finite construction
+described here.
+
+
+</p>
+<h3 class="sectionHead" id="implementation"><span class="titlemark">9   </span> <a id="x1-450009"></a>Implementation</h3>
+<!-- l. 8 --><p class="noindent">This section records implementation choices that make the
+construction practical without changing its mask semantics.
+</p><!-- l. 11 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="glr-tables"><span class="titlemark">9.1   </span> <a id="x1-460009.1"></a>GLR Tables</h4>
+<!-- l. 14 --><p class="noindent">The second prerequisite is the parse-table construction.
+The evaluated implementation uses GLR parsing over
+IELR(1) tables rather than LALR(1) tables, which keeps the
+language-recognition power of canonical LR while retaining
+much of the state merging that makes LALR compact [<a href="#Xdenny2010ielr">4</a>].
+The payoff is in the straddling-terminal check of <span class="eccc1095-"><span class="small-caps">Commit</span></span>:
+a candidate completion \(t\in \mathrm {CanMatch}(q')\) can be tested by inspecting the
+parse-table cell for the current top LR state and lookahead \(t\). A
+shift is sufficient, and a reduce action is sufficient as well:
+with LR(1)-precise reduce lookaheads, a reduction listed
+under \(t\) is on a viable path for that same lookahead and
+will expose another justified action, eventually reaching a
+shift of \(t\). With LALR-style lookahead merging, the same
+table-cell test could admit a spurious reduce action; ruling
+that out would require an exploratory execution of parser
+actions.
+</p><!-- l. 28 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="stackeffect-automata1"><span class="titlemark">9.2   </span> <a id="x1-470009.2"></a>Stack-Effect Automata</h4>
+<!-- l. 31 --><p class="noindent">The compiler builds stack-effect automata from terminal-labelled
+GLR action runs. Each accepting path records a read prefix and
+the corresponding rewrite template used by <span class="eccc1095-"><span class="small-caps">Commit</span></span>. During
+construction, signed-word cancellation is applied eagerly so that
+pushed-and-read internal symbols do not survive into the read
+projection.
+</p><!-- l. 37 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="lexer-tables"><span class="titlemark">9.3   </span> <a id="x1-480009.3"></a>Lexer Tables</h4>
+<!-- l. 40 --><p class="noindent">The lexer DFA is compiled into tables for byte transitions,
+accepted terminals, \(\mathrm {CanMatch}\), and the vocabulary-indexed match table \(M(q,t)\) of
+§<a href="#exclusion-filtering">6.2.2<!-- tex4ht:ref: sec:lexer-match-table  --></a>. These tables let <span class="eccc1095-"><span class="small-caps">Mask</span> </span>apply longest-match exclusions
+without rescanning the whole vocabulary.
+</p><!-- l. 46 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="parser-dwa-layout"><span class="titlemark">9.4   </span> <a id="x1-490009.4"></a>Parser DWA Layout</h4>
+<!-- l. 49 --><p class="noindent">Substitution groups Terminal-DWA edges by common target
+before inserting stack-effect recognizers, sharing subgraphs before
+cancellation and shrinking the NWA that must be determinized.
+The final Parser DWA is stored as a transition table plus final
+weights; each state represents a set of read-side obligations and
+the surviving \(q,v\) weights at that point.
+</p><!-- l. 55 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="weight-representation"><span class="titlemark">9.5   </span> <a id="x1-500009.5"></a>Weight Representation</h4>
+<!-- l. 58 --><p class="noindent">The compiler never materializes weights as dense \(|Q_{\mathrm {lex}}|\times |\mathcal V|\) Boolean
+arrays. Each weight is stored as a <span class="ectt-1095">range-set-blaze </span>range
+map from lexer-state ranges to interned token range sets.
+Boolean operations are therefore costed by the number of
+stored ranges rather than by the numeric size of the covered
+sets.
+</p><!-- l. 64 --><p class="indent">   The compiler also constructs internal ID spaces for lexer
+states and tokens and may renumber them using the whole
+collection of weights that will be stored or queried together. The
+goal is not a small maximum ID, but a small number of ranges
+across the resulting weights and lexer-match tables. Interning
+both the outer maps and the inner token sets lets repeated
+weights be stored and compared by pointer identity. This
+interning turns mask equivalence into sharing: tokens whose stack
+consequence is identical collapse onto one stored object, which is
+the mechanism behind the vocabulary quotient and the resulting
+artifact size reported in §<a href="#scope-and-limits">12<!-- tex4ht:ref: sec:disc-limits  --></a>.
+</p><!-- l. 74 --><p class="indent">   After determinization, an optional acyclic minimization pass
+removes further redundancy. The pass is behavior-preserving;
+the compiler may skip it when the objects produced by
+substitution, cancellation, and determinization are already small
+enough.
+</p><!-- l. 79 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="transition-tables"><span class="titlemark">9.6   </span> <a id="x1-510009.6"></a>Transition Tables</h4>
+<!-- l. 82 --><p class="noindent">Parser-DWA default transitions compact wildcard stack reads,
+and the runtime stores a transition table that checks the
+explicit parser-state label first and falls back to the default
+label.
+</p><!-- l. 86 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="gss-traversal"><span class="titlemark">9.7   </span> <a id="x1-520009.7"></a>GSS Traversal</h4>
+<!-- l. 89 --><p class="noindent">The same leveled-GSS data structure is reused with different
+branch annotations: longest-match exclusion maps during
+ordinary runtime state and dense mask accumulators during a
+mask query. This lets the query reuse GSS sharing while changing
+only the per-branch payload.
+</p><!-- l. 95 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="endofsequence"><span class="titlemark">9.8   </span> <a id="x1-530009.8"></a>End-of-Sequence</h4>
+<!-- l. 99 --><p class="noindent">The ordinary vocabulary mask covers byte-emitting tokens
+governed by \(\beta (v)\). The stop token \(\mathrm {eos}\) is computed separately: its bit is
+set exactly when the consumed prefix is itself a complete string, \(u\in L\).
+Operationally, a configuration contributes EOS only when the
+lexer is at the terminal-boundary state \(q_0\) and the parser stack is
+accepting on end of input. The \(q_0\) requirement prevents stopping in
+the middle of a partial terminal; the parser acceptance check
+prevents stopping when the current prefix only has a valid
+continuation.
+</p><!-- l. 108 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="prefill"><span class="titlemark">9.9   </span> <a id="x1-540009.9"></a>Prefill</h4>
+<!-- l. 111 --><p class="noindent"><span class="eccc1095-"><span class="small-caps">Commit</span> </span>is defined for arbitrary byte fragments, not only for
+bytes of a sampled vocabulary token. The same scanner updates,
+longest-match exclusion updates, and stack-effect rewrites are
+used to consume prompt bytes or cached prefix bytes before
+generation begins. Prefill therefore establishes the same runtime
+invariant as ordinary token-by-token decoding before the first
+<span class="eccc1095-"><span class="small-caps">Mask</span> </span>query is issued.
+</p><!-- l. 118 --><p class="noindent">
+</p>
+<h4 class="subsectionHead" id="artifact-size"><span class="titlemark">9.10   </span> <a id="x1-550009.10"></a>Artifact Size</h4>
+<!-- l. 121 --><p class="noindent">The artifact size is driven by grammar size, vocabulary quotienting,
+and the number of distinct weights after determinization and
+minimization. For modest JSON-schema and tool-call grammars,
+repeated token consequences collapse into shared weights,
+yielding artifacts in the tens of megabytes rather than dense \(|Q_{\mathrm {lex}}|\times |\mathcal V|\)
+masks. Larger grammars, programming-language syntaxes, and
+tokenizers that defeat mask equivalence are plausible pressure
+points.
+
+
+</p>
+<h3 class="sectionHead" id="evaluation"><span class="titlemark">10   </span> <a id="x1-5600010"></a>Evaluation</h3>
+<!-- l. 7 --><p class="noindent">We measure <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>on JSON-schema workloads from the
+official JSONSchemaBench corpus, and compare against
+llguidance [<a href="#Xllguidance2024">11</a>] as a representative state-of-the-art online baseline.
+The comparison is not a claim that fresh-schema compilation
+is always cheaper. It separates two costs that matter in
+serving systems: cold construction of a constraint object, and
+the hot-path cost of producing masks once that object is
+available.
+</p>
+<!-- l. 14 --><p class="noindent"><span class="paragraphHead" id="benchmark-setup"><a id="x1-5700010"></a><span class="ecbx-1095">Benchmark setup.</span></span>
+   The detailed timing tables below use the August 2026 CFA
+JSONSchemaBench result, restricted to the 9,558 schemas in
+JSONSchemaBench’s official <span class="ectt-1095">data/ </span>tree. MaskBench supplies the
+corresponding validation examples, but its 705 additional
+Handwritten, Synthesized, JME, and MCPspec schemas are
+excluded; BFCL is a separate source. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>contributes
+3,066,674 measured TBMs over 7,976 problems and llguidance
+contributes 3,068,495 over 7,977; 7,970 problems have successful
+token timing for both systems. Build/TTFM values retain the
+original 12-vCPU <span class="ectt-1095">m8azn.3xlarge </span>measurements. After fixing a
+post-deserialization lazy-vocabulary materialization bug,
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>runtime timings were refreshed on the same AMD
+EPYC 9R05 M8azn family for every problem whose original
+maximum TBM was at least 25\(\mu \)s (1,292 unique problems). Thus
+this is an explicitly documented composite timing artifact rather
+than a claim that every number was collected in one process on
+one machine size.
+</p>
+<!-- l. 29 --><p class="noindent"><span class="paragraphHead" id="baselines"><a id="x1-5800010"></a><span class="ecbx-1095">Baselines.</span></span>
+   llguidance is used as the online parser-based baseline. It is a
+strong baseline for the workload studied here: JSON grammars
+are delimiter-separated, and this structure lets llguidance avoid
+expensive parser exploration on most token steps. Thus the
+comparison should not be read as evidence that online parsing is
+a practical bottleneck for ordinary JSON-schema decoding. It
+measures the residual hot-path cost, especially tail cost, after
+those optimizations. We do not include XGrammar in the
+headline comparison: its reported median time-between-mask
+numbers on JSONSchemaBench are within the same order of
+magnitude as llguidance’s, and the structural argument in §<a href="#grammarconstrained-decoding">11<!-- tex4ht:ref: sec:related-gcd-systems  --></a>
+applies to both systems.
+</p>
+<!-- l. 41 --><p class="noindent"><span class="paragraphHead" id="mask-latency"><a id="x1-5900010"></a><span class="ecbx-1095">Mask latency.</span></span>
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is consistently faster in the token loop, but the main
+empirical separation is tail predictability rather than median
+usability. llguidance’s median TBM is already small for JSON
+decoding. In this view, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has median TBM 3.05\(\mu \)s, p99
+10.31\(\mu \)s, p99.9 17.82\(\mu \)s, p99.99 23.94\(\mu \)s, and maximum 70.08\(\mu \)s.
+llguidance has median TBM 10.45\(\mu \)s, p99 222.98\(\mu \)s, p99.9 787.85\(\mu \)s,
+and maximum 14.43ms. No measured <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>TBM reaches
+75\(\mu \)s; llguidance has 17,787 TBMs at or above 500\(\mu \)s and 864
+at or above 1ms. These tails matter for very fast decode
+loops and high aggregate service rates, but they do not
+make llguidance impractical for typical single JSON-schema
+generations.
+</p>
+<div class="table">
+<!-- l. 54 --><p class="indent"> </p><figure class="float" id="-runtime-time-between-masks-on-the-august-officialjsonschemabench-view-tbm-is-mask-generation-plus-commit-for-one-emitted-token-">
+<a id="x1-59001r1"></a>
+<a id="x1-59002"></a>
+<figcaption class="caption"><span class="id">Table 1: </span><span class="content">Runtime Time Between Masks on the August 2026
+official-JSONSchemaBench  view.  TBM  is  mask  generation
+plus commit for one emitted token.                       </span></figcaption><!-- tex4ht:label?: x1-59001r10  -->
+<div class="tabular">
+<table class="tabular" id="TBL-2"><colgroup id="TBL-2-1g"><col id="TBL-2-1"/><col id="TBL-2-2"/><col id="TBL-2-3"/><col id="TBL-2-4"/><col id="TBL-2-5"/><col id="TBL-2-6"/><col id="TBL-2-7"/></colgroup><tr id="TBL-2-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecbx-0800">System  </span></td><td class="td11" id="TBL-2-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM50 </span></td><td class="td11" id="TBL-2-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM99 </span></td><td class="td11" id="TBL-2-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM99.9 </span></td><td class="td11" id="TBL-2-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBMmax </span></td><td class="td11" id="TBL-2-1-6" style="white-space:nowrap; text-align:right;"> \(&gt;\)<span class="ecbx-0800">500</span> \(\mu \)<span class="ecbx-0800">s </span></td><td class="td11" id="TBL-2-1-7" style="white-space:nowrap; text-align:right;"> \(&gt;\)<span class="ecbx-0800">1 ms </span></td>
+</tr><tr id="TBL-2-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc0800-"><span class="small-caps">Merlon</span> </span></td><td class="td11" id="TBL-2-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">3.05</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10.31</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17.82</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">70.08</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td><td class="td11" id="TBL-2-2-7" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
+</tr><tr id="TBL-2-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-3-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-0800">llguidance </span></td><td class="td11" id="TBL-2-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10.45</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">222.98</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">787.85</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">14.43 ms </span></td><td class="td11" id="TBL-2-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17,787 </span></td><td class="td11" id="TBL-2-3-7" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">864 </span></td>
+</tr></table></div>
+</figure>
+</div>
+<!-- l. 71 --><p class="indent">   Token-weighted percentiles measure aggregate work, but they
+can dilute schema-level tail risk: long easy generations contribute
+many low-latency tokens, while a short hard schema may cause
+repeated slow masks in one user-visible completion. We therefore
+also report problem-level tail incidence.
+</p>
+<div class="table">
+<!-- l. 76 --><p class="indent"> </p><figure class="float" id="-problemlevel-tail-incidence-on-the-problems-timed-successfully-by-both-systems-a-problem-is-tailproblematic-if-any-measured-example-contains-at-least-two-mask-operations-above-s-has-no-mask-above-s-or-ms-in-the-same-run-">
+<a id="x1-59003r2"></a>
+<a id="x1-59004"></a>
+<figcaption class="caption"><span class="id">Table 2: </span><span class="content">Problem-level tail incidence on the 7,970 problems
+timed   successfully   by   both   systems.   A   problem   is
+tail-problematic if any measured example contains at least
+two mask operations above 500\(\mu \)s. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no mask above
+500\(\mu \)s or 1ms in the same run.                            </span></figcaption><!-- tex4ht:label?: x1-59003r10  -->
+<div class="tabular">
+<table class="tabular" id="TBL-3"><colgroup id="TBL-3-1g"><col id="TBL-3-1"/><col id="TBL-3-2"/><col id="TBL-3-3"/></colgroup><tr id="TBL-3-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-1-1" style="white-space:normal; text-align:left;"> <!-- l. 88 --><p class="noindent"><span class="ecbx-0800">Definition</span> </p></td><td class="td11" id="TBL-3-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llguidance </span></td><td class="td11" id="TBL-3-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecxc-0800">Merlon </span></td>
+</tr><tr id="TBL-3-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-2-1" style="white-space:normal; text-align:left;"> <!-- l. 90 --><p class="noindent"><span class="ecrm-0800">Any TBM</span> \(\ge 500\,\mu \mathrm {s}\)                                         </p></td><td class="td11" id="TBL-3-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">855 / 7,970 = 10.73% </span></td><td class="td11" id="TBL-3-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
+</tr><tr id="TBL-3-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-3-1" style="white-space:normal; text-align:left;"> <!-- l. 91 --><p class="noindent"><span class="ecrm-0800">Any TBM</span> \(\ge 1\,\mathrm {ms}\)                                         </p></td><td class="td11" id="TBL-3-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">142 / 7,970 = 1.78% </span></td><td class="td11" id="TBL-3-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
+</tr><tr id="TBL-3-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-4-1" style="white-space:normal; text-align:left;"> <!-- l. 92 --><p class="noindent"><span class="ecrm-0800">Tail-problematic:   any   example   has</span>   \(\ge 2\)
+ <span class="ecrm-0800">TBMs</span> \(\ge 500\,\mu \mathrm {s}\)                                              </p></td><td class="td11" id="TBL-3-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">577 / 7,970 = 7.24% </span></td><td class="td11" id="TBL-3-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
+</tr></table></div>
+</figure>
+</div>
+<!-- l. 97 --><p class="noindent"><span class="paragraphHead" id="cold-start-and-compilation-cost"><a id="x1-6000010"></a><span class="ecbx-1095">Cold start and compilation cost.</span></span>
+   The runtime gain is purchased with precomputation.
+llguidance reaches the first mask much faster: across successful
+builds its median TTFM is 1.11ms and p99 12.02ms. <span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s
+median TTFM is 10.42ms and p99 229.81ms, with the build
+performed on the original 12-vCPU host. On a cold single-use
+metric, TTFM plus the observed TBMs for the measured
+generation, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>wins 484 of the 7,970 paired timed
+problems; llguidance wins 7,486. This makes <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>a
+poor choice on the cold path for one-off short JSON-schema
+generations. The intended deployment shape is a hot constraint
+cache: an online system can serve the cold request immediately,
+while <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles the normalized schema for subsequent
+requests; fixed tool schemas can be compiled ahead of
+deployment.
+</p>
+<!-- l. 109 --><p class="noindent"><span class="paragraphHead" id="criticalpath-mask-overrun"><a id="x1-6100010"></a><span class="ecbx-1095">Critical-path mask overrun.</span></span>
+   The hot-path question is whether the mask is ready by the
+next decode boundary. For a target unconstrained token rate \(H\), let
+\(B=1/H\) be the per-token budget. For a token whose mask takes \(m_i\) seconds,
+define its mask overrun as \[ o_i(H)=\max \{0, m_i - B\}. \] For an example with \(n\) emitted tokens,
+define critical-path mask-overrun loss as \[ L_H=\frac {\sum _i o_i(H)}{n/H + \sum _i o_i(H)}. \] In a strict batch-1
+implementation that waits for the mask before launching the next
+decode step, \(L_H\) can be interpreted as local accelerator idle time.
+In a batched serving system, it should instead be read as
+scheduler pressure: the request may be skipped, rescheduled, or
+delayed rather than literally idling the accelerator. The
+model therefore isolates one possible critical-path cost of
+masking; it is not a claim that every llguidance overrun
+directly translates into wasted GPU time in a production
+scheduler.
+</p>
+<div class="table">
+<!-- l. 129 --><p class="indent"> </p><figure class="float" id="-aggregate-criticalpath-maskoverrun-loss-the-target-rate-is-the-unconstrained-decode-rate-before-masking-effective-rate-is-the-rate-after-adding-mask-overrun-on-the-critical-path-has-no-measurable-overrun-at-these-budgets-">
+<a id="x1-61001r3"></a>
+<a id="x1-61002"></a>
+<figcaption class="caption"><span class="id">Table 3:  </span><span class="content">Aggregate  critical-path  mask-overrun  loss.  The
+target rate is the unconstrained decode rate before masking.
+Effective rate is the rate after adding mask overrun on the
+critical path. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no measurable overrun at these
+budgets.                                               </span></figcaption><!-- tex4ht:label?: x1-61001r10  -->
+<div class="tabular">
+<table class="tabular" id="TBL-4"><colgroup id="TBL-4-1g"><col id="TBL-4-1"/><col id="TBL-4-2"/><col id="TBL-4-3"/><col id="TBL-4-4"/><col id="TBL-4-5"/></colgroup><tr id="TBL-4-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Target </span></td><td class="td11" id="TBL-4-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Budget </span></td><td class="td11" id="TBL-4-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llg loss </span></td><td class="td11" id="TBL-4-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llg effective </span></td><td class="td11" id="TBL-4-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecxc-0800">Merlon </span><span class="ecbx-0800">loss </span></td>
+</tr><tr id="TBL-4-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2,000 tok/s </span></td><td class="td11" id="TBL-4-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">500</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0.33% </span></td><td class="td11" id="TBL-4-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1,993 tok/s </span></td><td class="td11" id="TBL-4-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
+</tr><tr id="TBL-4-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5,000 tok/s </span></td><td class="td11" id="TBL-4-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">200</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1.91% </span></td><td class="td11" id="TBL-4-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">4,904 tok/s </span></td><td class="td11" id="TBL-4-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
+</tr><tr id="TBL-4-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10,000 tok/s </span></td><td class="td11" id="TBL-4-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">100</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5.40% </span></td><td class="td11" id="TBL-4-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">9,460 tok/s </span></td><td class="td11" id="TBL-4-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
+</tr><tr id="TBL-4-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-5-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20,000 tok/s </span></td><td class="td11" id="TBL-4-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">50</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">12.74% </span></td><td class="td11" id="TBL-4-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17,451 tok/s </span></td><td class="td11" id="TBL-4-5-5" style="white-space:nowrap; text-align:right;">              \(&lt;0.001\%\) </td>
+</tr></table></div>
+</figure>
+</div>
+<!-- l. 150 --><p class="indent">   A problem is overrun-problematic at rate \(H\) and threshold \(\tau \) if
+any measured example for that problem has \(L_H\ge \tau \). This incidence view
+is important because token-weighted averages hide whether a
+particular schema causes visible stalls in a generation.
+</p>
+<div class="table">
+<!-- l. 155 --><p class="indent"> </p><figure class="float" id="-overrunproblematic-incidence-for-llguidance-has-incidence-at-these-thresholds-through-toks-in-this-run-">
+<a id="x1-61003r4"></a>
+<a id="x1-61004"></a>
+<figcaption class="caption"><span class="id">Table 4:   </span><span class="content">Overrun-problematic   incidence   for   llguidance.
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has 0% incidence at these thresholds through 20,000
+tok/s in this run.                                       </span></figcaption><!-- tex4ht:label?: x1-61003r10  -->
+<div class="tabular">
+<table class="tabular" id="TBL-5"><colgroup id="TBL-5-1g"><col id="TBL-5-1"/><col id="TBL-5-2"/><col id="TBL-5-3"/><col id="TBL-5-4"/></colgroup><tr id="TBL-5-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Target rate </span></td><td class="td11" id="TBL-5-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Budget </span></td><td class="td11" id="TBL-5-1-3" style="white-space:nowrap; text-align:right;">       \(L_H\ge 5\%\) </td><td class="td11" id="TBL-5-1-4" style="white-space:nowrap; text-align:right;">       \(L_H\ge 10\%\) </td>
+</tr><tr id="TBL-5-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2,000 tok/s </span></td><td class="td11" id="TBL-5-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">500</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2.56% </span></td><td class="td11" id="TBL-5-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1.22% </span></td>
+</tr><tr id="TBL-5-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5,000 tok/s </span></td><td class="td11" id="TBL-5-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">200</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">8.77% </span></td><td class="td11" id="TBL-5-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5.82% </span></td>
+</tr><tr id="TBL-5-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10,000 tok/s </span></td><td class="td11" id="TBL-5-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">100</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20.85% </span></td><td class="td11" id="TBL-5-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">13.93% </span></td>
+</tr><tr id="TBL-5-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-5-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20,000 tok/s </span></td><td class="td11" id="TBL-5-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">50</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">61.04% </span></td><td class="td11" id="TBL-5-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">38.17% </span></td>
+</tr></table></div>
+</figure>
+</div>
+<!-- l. 174 --><p class="noindent"><span class="paragraphHead" id="cpu-maskservice-capacity"><a id="x1-6200010"></a><span class="ecbx-1095">CPU mask-service capacity.</span></span>
+   A second hot-path cost is CPU service time. In this
+run the mean TBM is 3.45\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 21.17\(\mu \)s for
+llguidance. At high aggregate constrained-token throughput
+across many concurrent users, the difference is a capacity
+question even when individual users decode at ordinary
+speeds.
+</p>
+<div class="table">
+<!-- l. 180 --><p class="indent"> </p><figure class="float" id="-approximate-cpu-service-demand-for-mask-generation-using-mean-tbm-from-the-august-officialjsonschemabench-view-values-are-cpuseconds-per-wallclock-second-of-aggregate-constrainedtoken-throughput-">
+<a id="x1-62001r5"></a>
+<a id="x1-62002"></a>
+<figcaption class="caption"><span class="id">Table 5:   </span><span class="content">Approximate   CPU   service   demand   for   mask
+generation,   using   mean   TBM   from   the   August   2026
+official-JSONSchemaBench view. Values are CPU-seconds per
+wall-clock second of aggregate constrained-token throughput.</span></figcaption><!-- tex4ht:label?: x1-62001r10  -->
+<div class="tabular">
+<table class="tabular" id="TBL-6"><colgroup id="TBL-6-1g"><col id="TBL-6-1"/><col id="TBL-6-2"/><col id="TBL-6-3"/></colgroup><tr id="TBL-6-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-1000">Agg. tok/s </span></td><td class="td11" id="TBL-6-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecxc-1000">Merlon </span></td><td class="td11" id="TBL-6-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-1000">llguidance </span></td>
+</tr><tr id="TBL-6-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,000 </span></td><td class="td11" id="TBL-6-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.00345 </span></td><td class="td11" id="TBL-6-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.0212 </span></td>
+</tr><tr id="TBL-6-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">10,000 </span></td><td class="td11" id="TBL-6-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.0345 </span></td><td class="td11" id="TBL-6-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.212 </span></td>
+</tr><tr id="TBL-6-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">100,000 </span></td><td class="td11" id="TBL-6-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.345 </span></td><td class="td11" id="TBL-6-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2.117 </span></td>
+</tr></table></div>
+</figure>
+</div>
+<!-- l. 199 --><p class="noindent"><span class="paragraphHead" id="tail-latency"><a id="x1-6300010"></a><span class="ecbx-1095">Tail latency.</span></span>
+   The structural difference between precomputation and online
+parser simulation is most visible in the tail. Online systems can
+pay for reduction chains, lexer state exploration, and stack forks
+at the unlucky token where they occur; <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>pays for the
+bounded read projection during compilation and then runs a
+bounded walk. In JSON-schema decoding this is a tail-smoothing
+advantage, not a claim that llguidance is generally too slow.
+In the August 2026 official JSONSchemaBench view, the
+maximum recorded TBM is 70.08\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 14.43ms for
+llguidance.
+</p>
+<figure class="figure">
+<!-- l. 211 --><p class="noindent" id="-tail-behavior-over-the-committed-cfa-sweep-top-tbm-threshold-as-a-function-of-exceedance-probability-bottom-llguidance-multiplier-over-the-same-tail-range-"><img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/c_tbm_tail_smooth_plot.png" width="289"/> <a id="x1-63001r2"></a>
+<a id="x1-63002"></a>
+</p>
+<figcaption class="caption"><span class="id">Figure 2:  </span><span class="content">Tail  behavior  over  the  committed  CFA  sweep.
+Top: TBM threshold as a function of exceedance probability.
+Bottom:  llguidance/<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>multiplier  over  the  same  tail
+range.                                                  </span></figcaption><!-- tex4ht:label?: x1-63001r10  -->
+</figure>
+<!-- l. 216 --><p class="noindent"><span class="paragraphHead" id="workload-breakdown"><a id="x1-6400010"></a><span class="ecbx-1095">Workload breakdown.</span></span>
+   The category-level measurements follow the same qualitative
+pattern as the aggregate: <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>stays in the low microseconds,
+while llguidance is usually fast enough for JSON-shaped decoding
+but has a wider tail. Smaller categories are best read as coverage
+checks rather than stable distribution estimates. These timing
+results are performance measurements over successful runs, not a
+substitute for a semantic-equivalence audit. The current
+CFA full report defaults intentionally leave discrepancy
+adjudication disabled; semantic validation is run separately when
+required.
+</p>
+<figure class="figure" id="-additional-cfa-sweep-summaries-for-the-evaluation-section-">
+<div class="subfigure">
+<!-- l. 228 --><p class="noindent"></p><!-- l. 230 --><p class="noindent"><img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/b_maskbench_tbm.png" width="289"/> <a id="x1-64001r1"></a></p>
+<div class="caption"><span class="id"><span class="ecrm-1000">(a)  </span></span><span class="content"><span class="ecrm-1000">TBM  summary  points  over  the  official  JSONSchemaBench
+</span><span class="ecrm-1000">population.</span> </span></div>
+</div>
+<div class="subfigure">
+<!-- l. 236 --><p class="noindent"></p><!-- l. 238 --><p class="noindent"><img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/a_maskbench_ttfm.png" width="289"/> <a id="x1-64002r2"></a>
+</p>
+<div class="caption"><span class="id"><span class="ecrm-1000">(b) </span></span><span class="content"><span class="ecrm-1000">TTFM summary points over the same population.</span> </span></div>
+</div> <a id="x1-64003r3"></a>
+<a id="x1-64004"></a>
+<div class="caption"><span class="id">Figure 3:   </span><span class="content">Additional   CFA   sweep   summaries   for   the
+Evaluation section.
+</span></div>
+</figure>
+<h3 class="sectionHead" id="related-work"><span class="titlemark">11   </span> <a id="x1-6500011"></a>Related Work</h3>
+<!-- l. 7 --><p class="noindent">We position <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>relative to two bodies of work:
+grammar-constrained decoding systems for LLMs, and the
+parsing and automata-theoretic techniques the construction
+depends on. Our comparison turns on two questions: where
+parsing work happens (online during decoding, or once at compile
+time), and what grammar class is supported.
+</p><!-- l. 13 --><p class="indent">   Prior systems often precompute finite-state or lexer-side
+information, cache parts of the runtime check, or optimize parser
+execution during mask generation. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>moves a different
+boundary: it compiles the stack-dependent parser side of masking.
+The Parser DWA is a finite weighted automaton over parser-stack
+symbols whose weights are indexed by lexer state and vocabulary
+token, so each mask query becomes a shared walk over active
+parser stacks rather than candidate-by-candidate parser
+simulation.
+</p>
+<!-- l. 22 --><p class="noindent"><span class="paragraphHead" id="grammarconstrained-decoding"><a id="x1-6600011"></a><span class="ecbx-1095">Grammar-constrained decoding.</span></span>
+   Geng et al. [<a href="#Xgeng2023gcd">8</a>] formalized grammar-constrained decoding
+(GCD) by defining a token as valid iff the current prefix can be
+extended to a string in the grammar’s language (the validity definition). The
+straightforward implementation tests this condition online for
+every vocabulary token at every step. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>keeps the same
+semantics (§<a href="#languagelevel-mask">2.1<!-- tex4ht:ref: sec:semantics  --></a>) but moves the test offline. Prior systems can be
+read along one axis: how much of that test they move offline, and
+at what fidelity.
+</p><!-- l. 33 --><p class="indent">   At one end, several systems precompute only the regular part
+of the check. Outlines [<a href="#Xwillard2023outlines">14</a>] compiles a regular expression
+into a token-level finite automaton, after which masks are
+precomputed transition-table lookups; this is fast precisely
+because regular constraints admit DFA-shaped masks, and
+it does not lift to balanced delimiters, nested JSON, or
+programming-language syntax. Koo et al. [<a href="#Xkoo2024automata">9</a>] push the same
+precomputed-automaton idea up to deterministic context-free
+languages (DCFLs), but not to ambiguous grammars or general
+CFGs. DOMINO [<a href="#Xbeurer2024domino">2</a>] precomputes which vocabulary tokens are
+context-independent (validity fixed by the lexer state) and masks
+only the remaining “adaptive” tokens online; it moves the
+regular part offline but leaves a stack-dependent residue on
+the query path, and the adaptive set can still be large on
+grammars with deep reductions. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>instead treats every
+token uniformly: its precomputed weights encode the joint
+dependence on lexer state and stack pattern, so adaptive
+tokens cost no more than context-independent ones at query
+time.
+</p><!-- l. 50 --><p class="indent">   At the other end, systems for CFG-like constraints keep the
+parser check online, simulating a pushdown or Earley-style parser
+during decoding. XGrammar [<a href="#Xdong2024xgrammar">5</a>] compiles JSON schemas and
+EBNF grammars into byte-level pushdown automata that
+execute at runtime. llguidance [<a href="#Xllguidance2024">11</a>] runs an Earley parser on a
+separate derivative-based lexer over regex terminals. Both
+designs are highly effective on JSON-shaped workloads, where
+delimiter structure makes most online checks cheap enough in
+practice. Their remaining cost is tail and generality: query time
+can still depend on the current lexer and parser state, and
+lexed-grammar systems expose lexer-boundary semantics that
+are not the same as scannerless byte-level CFG semantics.
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles away the stack-dependent parser check for its
+normalized CFG target, paying for that simplicity with heavier
+construction.
+</p><!-- l. 63 --><p class="indent">   Two systems move along the axis in opposite directions.
+Pre\(^3\) [<a href="#Xchen2025pre3">3</a>] compiles an overapproximating deterministic PDA and
+uses online checks to reject the false positives it admits; the
+compiled object is smaller, but masks are not exact and
+correctness depends on the runtime filter, whereas <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
+computes exact masks for normalized CFGs. Park et al. [<a href="#Xpark2025flexible">12</a>]
+instead make grammar preprocessing faster so that per-request
+compilation is affordable, keeping masking online; <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
+deliberately accepts a heavier compile to make the runtime walk
+as cheap as possible. The two efforts are complementary, and the
+right choice depends on whether a grammar is used once or
+thousands of times, a question §<a href="#cold-path-and-hot-path">12<!-- tex4ht:ref: sec:disc-economics  --></a> returns to.
+</p><!-- l. 76 --><p class="indent">   Across this axis, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>makes a different trade-off: it
+moves the <span class="ecti-1095">exact, stack-dependent </span>parser check offline for
+normalized CFGs. LR action chains and reductions are
+summarized as terminal stack-effect recognizers at compile time
+and combined into the Parser DWA, a finite weighted automaton
+over parser-stack symbols. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>walks that automaton
+and <span class="eccc1095-"><span class="small-caps">Commit</span> </span>applies terminal rewrite templates; neither
+reconstructs the parser derivation for a candidate token at
+runtime (§<a href="#mask">6.2<!-- tex4ht:ref: sec:runtime-mask  --></a>).
+</p>
+<!-- l. 84 --><p class="noindent"><span class="paragraphHead" id="independent-parserstack-classification"><a id="x1-6700011"></a><span class="ecbx-1095">Independent parser-stack classification.</span></span>
+   PSC [<a href="#Xli2026psc">10</a>] likewise moves stack-dependent mask construction
+into preprocessing. It constructs stack-transformer transducers,
+combines token acceptance conditions into a deterministic
+finite-state classifier, and obtains a precomputed vocabulary mask
+by traversing the current parser stack. The high-level insight
+that a compiled finite-state structure can read the parser
+stack directly is therefore shared. Our representation retains
+Boolean weights over lexer-state/token pairs on automaton
+transitions and final states, permitting token-dependent
+information to be factored through shared stack-reading
+structure, rather than only classifying states into output
+masks. We additionally describe the construction and runtime
+traversal for graph-structured stacks. These are differences
+of representation and scope; this paper does not include
+a controlled head-to-head performance comparison with
+PSC.
+</p>
+<!-- l. 99 --><p class="noindent"><span class="paragraphHead" id="parserbased-masking"><a id="x1-6800011"></a><span class="ecbx-1095">Parser-based masking.</span></span>
+   XGrammar and llguidance keep pushdown or Earley-style
+parser work on the mask path. This is a good engineering choice
+for fresh JSON schemas: startup is low, and JSON’s delimiter
+structure keeps most steps cheap. The trade-off is that the
+mask path still performs stateful parser work for the current
+prefix, and the semantics of lexed CFG systems can be
+subtle on arbitrary grammars. This is the online work that
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles into read projections and Parser-DWA
+weights.
+</p>
+<!-- l. 107 --><p class="noindent"><span class="paragraphHead" id="automatabased-masking"><a id="x1-6900011"></a><span class="ecbx-1095">Automata-based masking.</span></span>
+   Outlines and related finite-state systems demonstrate why
+masks are cheap when the constraint state is finite. <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
+preserves that mask shape by compiling bounded stack-prefix
+reads into a finite weighted automaton, extending the finite-state
+idea to the parser-stack conditions needed for normalized
+CFGs.
+</p>
+<!-- l. 113 --><p class="noindent"><span class="paragraphHead" id="generalized-parsing"><a id="x1-7000011"></a><span class="ecbx-1095">Generalized parsing.</span></span>
+<span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s runtime state is a graph-structured stack
+(GSS), the data structure introduced by Tomita [<a href="#Xtomita1985glr">13</a>] to
+handle ambiguous LR parsing in cubic worst-case time. At
+a fork the GSS represents multiple parser configurations
+that share their common stack suffix; configurations that
+reach the same parser state at the same input position are
+merged. We use the GSS for the same reason Tomita did: it
+collapses ambiguity into shared structure. The per-target
+merging in our mask query (§<a href="#mask">6.2<!-- tex4ht:ref: sec:runtime-mask  --></a>) is essentially a GSS-style
+sharing argument lifted from input positions to Parser-DWA
+states.
+</p><!-- l. 125 --><p class="indent">   Naive GLR parsing can exhibit cubic behaviour on grammars
+with hidden left recursion or right-recursive nullable productions.
+Aycock et al. [<a href="#Xaycock2001faster">1</a>] analyse these cases and show that grammar
+normalization bounds the number of consecutive reductions
+between shifts. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>applies that normalization at compile
+time, so the stack-effect recognizers are acyclic and the Parser
+DWA has bounded read depth per terminal. This is what makes
+the runtime walk a depth-bounded traversal rather than an
+unbounded simulation.
+</p><!-- l. 134 --><p class="indent">   The push/read cancellation algebra of §<a href="#composition">4.5<!-- tex4ht:ref: sec:cancellation-and-projection  --></a> is a special case of
+the well-known representation of pushdown transitions as
+elements of a monoid with relations \(P_pR_p\to \epsilon \) and \(P_pR_q\to 0\); compositions are
+then ordinary monoid products, and projection to read
+symbols is a quotient. Compiling a CFG into a weighted
+automaton whose weights are themselves token sets fits
+into the more general framework of weighted automata
+over semirings [<a href="#Xdroste2009handbook">6</a>, <a href="#Xfahrenberg2017featured">7</a>]: our weights form the Boolean lattice \(\mathbb B^{Q_{\mathrm {lex}}\times \mathcal V}\)
+under \((\lor ,\land )\), and the runtime walk is weighted shortest-path
+evaluation specialised to this lattice. We use only the Boolean
+lattice here; §<a href="#future-work">12<!-- tex4ht:ref: sec:disc-futures  --></a> discusses retargeting the same walk to richer
+semirings.
+</p>
+<!-- l. 148 --><p class="noindent"><span class="paragraphHead" id="structured-output-systems-and-benchmarks"><a id="x1-7100011"></a><span class="ecbx-1095">Structured output systems and benchmarks.</span></span>
+   Structured-output systems increasingly mix JSON schemas,
+tool calls, regular fragments, and context-free fragments. The
+CFA/MaskBench-style workloads used in §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> exercise this serving
+regime: the same schema or tool grammar is often reused across
+many requests, making compilation and caching central to the
+design trade-off.
+</p>
+<!-- l. 155 --><p class="noindent"><span class="paragraphHead" id="positioning-summary"><a id="x1-7200011"></a><span class="ecbx-1095">Positioning summary.</span></span>
+   Table <a href="#x1-72001r6">6<!-- tex4ht:ref: tab:related-comparison  --></a> sketches the design space. The combination that
+distinguishes <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is exact masks for normalized CFGs,
+including ambiguous ones, using a finite weighted automaton that
+reads parser stacks directly rather than simulating parser
+transitions at query time.
+</p>
+<div class="table">
+<!-- l. 162 --><p class="indent"> </p><figure class="float" id="-where-parsing-work-happens-by-system-">
+<a id="x1-72001r6"></a>
+<a id="x1-72002"></a>
+<figcaption class="caption"><span class="id">Table 6: </span><span class="content">Where parsing work happens, by system.         </span></figcaption><!-- tex4ht:label?: x1-72001r11  -->
+<div class="tabular">
+<table class="tabular" id="TBL-7"><colgroup id="TBL-7-1g"><col id="TBL-7-1"/><col id="TBL-7-2"/><col id="TBL-7-3"/><col id="TBL-7-4"/><col id="TBL-7-5"/></colgroup><tr id="TBL-7-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecbx-1000">System                   </span></td><td class="td11" id="TBL-7-1-2" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Grammars    </span></td><td class="td11" id="TBL-7-1-3" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Mask construction        </span></td><td class="td11" id="TBL-7-1-4" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Online parsing   </span></td><td class="td11" id="TBL-7-1-5" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Ambiguity  </span></td>
+</tr><tr id="TBL-7-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-2-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Outlines                       </span></td><td class="td11" id="TBL-7-2-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Regular       </span></td><td class="td11" id="TBL-7-2-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed DFA          </span></td><td class="td11" id="TBL-7-2-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-2-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
+</tr><tr id="TBL-7-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-3-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Koo et al. [</span><a href="#Xkoo2024automata"><span class="ecrm-1000">9</span></a><span class="ecrm-1000">]</span> </td><td class="td11" id="TBL-7-3-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">DCFL        </span></td><td class="td11" id="TBL-7-3-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed automaton      </span></td><td class="td11" id="TBL-7-3-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-3-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
+</tr><tr id="TBL-7-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-4-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">XGrammar                   </span></td><td class="td11" id="TBL-7-4-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-4-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Online PDA               </span></td><td class="td11" id="TBL-7-4-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-4-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">supported   </span></td>
+</tr><tr id="TBL-7-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                     </span></td><td class="td11" id="TBL-7-5-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Lexed CFG     </span></td><td class="td11" id="TBL-7-5-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Earley + derivative lexer      </span></td><td class="td11" id="TBL-7-5-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-5-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">supported   </span></td>
+</tr><tr id="TBL-7-6-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-6-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">DOMINO                     </span></td><td class="td11" id="TBL-7-6-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-6-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Hybrid (adaptive subset online)  </span></td><td class="td11" id="TBL-7-6-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per adaptive token  </span></td><td class="td11" id="TBL-7-6-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
+</tr><tr id="TBL-7-7-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-7-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Pre</span>\(^3\)                              </td><td class="td11" id="TBL-7-7-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">DCFL (approx.)  </span></td><td class="td11" id="TBL-7-7-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Online DPDA + filter        </span></td><td class="td11" id="TBL-7-7-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-7-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
+</tr><tr id="TBL-7-8-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-8-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">PSC [</span><a href="#Xli2026psc"><span class="ecrm-1000">10</span></a><span class="ecrm-1000">]                      </span></td><td class="td11" id="TBL-7-8-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-8-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed stack FSA       </span></td><td class="td11" id="TBL-7-8-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-8-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
+</tr><tr id="TBL-7-9-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-9-1" style="white-space:nowrap; text-align:left;"> <span class="ecxc-1000">Merlon </span><span class="ecbx-1000">(this paper)  </span></td><td class="td11" id="TBL-7-9-2" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">CFG        </span></td><td class="td11" id="TBL-7-9-3" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Precomputed Parser DWA  </span></td><td class="td11" id="TBL-7-9-4" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">none         </span></td><td class="td11" id="TBL-7-9-5" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">supported  </span></td>
+</tr></table>
+</div>
+<!-- l. 185 --><p class="noindent"><span class="ecrm-0900">“—” in the ambiguity column marks systems where ambiguity does not apply,
+</span><span class="ecrm-0900">because the construction targets regular, deterministic, or approximate
+</span><span class="ecrm-0900">languages. All listed systems compute exact masks for their stated semantics
+</span><span class="ecrm-0900">except Pre</span>\(^3\)<span class="ecrm-0900">, which trades exactness for a smaller compiled object; both PSC
+</span><span class="ecrm-0900">and </span><span class="eccc0900-"><span class="small-caps">Merlon</span> </span><span class="ecrm-0900">move stack-dependent checks offline, using different
+</span><span class="ecrm-0900">precomputed automaton representations.</span>
+</p>
+</figure>
+</div>
+<!-- l. 193 --><p class="noindent">Three differences from prior systems shape the rest of the
+paper: (i) the Parser DWA is built for the joint (lexer-state,
+vocabulary-token) domain, so a single walk answers the
+mask for the whole vocabulary; (ii) the push/read algebra
+eliminates intermediate stack states from the runtime mask
+check, so the walk is depth-bounded by stack prefixes rather
+than by unbounded reduction chains; and (iii) the parser
+interface is reduced to terminal stack-effect recognizers with
+explicit lexer behavior. The runtime evaluates compiled
+automata and applies compiled rewrites; it does not run Earley
+items, PDA steps, or candidate-token parser simulations. The
+price is paid at compile time; we analyse that trade-off in
+§<a href="#cold-path-and-hot-path">12<!-- tex4ht:ref: sec:disc-economics  --></a>.
+
+
+</p>
+<h3 class="sectionHead" id="discussion"><span class="titlemark">12   </span> <a id="x1-7300012"></a>Discussion</h3>
+<!-- l. 7 --><p class="noindent">The empirical picture from §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> is mixed rather than one-sided.
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is much slower to build than llguidance, but once
+compiled it removes almost all online mask-generation cost from
+the decode loop. On the 9,558 official JSONSchemaBench
+schemas, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>keeps every recorded TBM below 71\(\mu \)s, while
+llguidance has a 14.43ms recorded tail. The median TBM gap is
+about 3.4\(\times \), and llguidance’s median is already small enough
+for many JSON serving settings. The useful question is
+therefore not whether precomputation is universally cheaper, or
+whether online parsing is intrinsically too slow. It is where a
+cached, predictable, grammar-general mask representation
+matters.
+</p>
+<!-- l. 17 --><p class="noindent"><span class="paragraphHead" id="cold-path-and-hot-path"><a id="x1-7400012"></a><span class="ecbx-1095">Cold path and hot path.</span></span>
+   For fresh, one-off JSON-schema generations, llguidance
+has the better latency shape. Across successful builds, its
+median TTFM is 1.11ms and p99 TTFM is 12.02ms, while
+<span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s median TTFM is 10.42ms and p99 TTFM is
+229.81ms on the original 12-vCPU build host. A system
+that exposes arbitrary first-use schemas should not put this
+prototype compiler directly on the user-visible path for short
+generations.
+</p><!-- l. 26 --><p class="indent">   That does not make the construction a poor serving primitive.
+It suggests a hybrid deployment shape. The first request for a
+normalized schema can use an online decoder immediately, while
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles a cached artifact at deployment time or after
+the first request. Subsequent requests against the same schema,
+and fixed tool-call schemas used by an application, run on the
+compiled hot path. In that regime, the relevant cost is not the
+arithmetic of one short cold request; it is tail predictability
+and CPU service demand across many requests and many
+tokens.
+</p>
+<!-- l. 35 --><p class="noindent"><span class="paragraphHead" id="latemask-pressure"><a id="x1-7500012"></a><span class="ecbx-1095">Late-mask pressure.</span></span>
+   The deadline model in §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> is deliberately conservative. A late
+mask merely causes its own request to miss decode opportunities
+until the mask is ready. The model does not charge for
+whole-batch stalls, KV-cache movement, recomputation, memory
+reserved by inactive requests, or any scheduling bookkeeping.
+Under that best-case interpretation, llguidance’s aggregate
+overrun loss is small at ordinary JSON decode budgets and grows
+only as the target token period approaches the long tail of mask
+latency: 0.33% at a 500\(\mu \)s budget, 1.91% at 200\(\mu \)s, and 5.40% at
+100\(\mu \)s. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no measurable overrun at these budgets in
+the sweep.
+</p><!-- l. 46 --><p class="indent">   The same data can be read as a CPU service-capacity result.
+Mean TBM is 3.45\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 21.17\(\mu \)s for llguidance. At
+high aggregate constrained-token throughput, online masking
+consumes CPU cores even if the accelerator can keep issuing
+model steps. This is a realistic pressure point, but it is also an
+engineering trade-off: JSON-schema masking with llguidance is
+already cheap enough that the extra CPU may be acceptable
+unless aggregate constrained throughput is high or SLOs are
+sensitive to the tail.
+</p>
+<!-- l. 54 --><p class="noindent"><span class="paragraphHead" id="tail-predictability"><a id="x1-7600012"></a><span class="ecbx-1095">Tail predictability.</span></span>
+   Mean mask time is only half the story. Online systems can
+exhibit heavy-tailed TBM distributions because lexer state
+exploration, reduction depth, and stack fork counts depend on
+the parse state. The Parser DWA’s runtime cost is bounded by
+an offline-known quantity, the maximum stack-prefix read
+depth in the compiled automaton, so compilation does not
+only reduce the mean; it tightens the tail. For SLO-bound
+serving, especially under fast decode budgets or high aggregate
+constrained throughput, the tail is the operational figure of
+merit.
+</p>
+<!-- l. 63 --><p class="noindent"><span class="paragraphHead" id="json-schemas-versus-general-grammars"><a id="x1-7700012"></a><span class="ecbx-1095">JSON schemas versus general grammars.</span></span>
+   The results should not be read as showing that llguidance is
+practically bad for JSON-schema constrained decoding. JSON is
+unusually friendly to online lexed parsing: quoted strings,
+numbers, literals, object keys, and recursive values are separated
+by structural delimiters or whitespace. This delimiter structure
+keeps most token steps simple. The stronger distinction
+is semantic and structural: <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>targets exact token
+admissibility for normalized CFGs with a simple, predictable
+lexer/commit interface, including grammars where lexeme
+boundaries cross vocabulary tokens in less JSON-like ways.
+Systems based on online lexing and parsing can be extremely
+effective on JSON while still exposing more subtle semantics on
+arbitrary Lark/CFG inputs.
+</p>
+<!-- l. 75 --><p class="noindent"><span class="paragraphHead" id="scope-and-limits"><a id="x1-7800012"></a><span class="ecbx-1095">Scope and limits.</span></span>
+   The first limit is compilation memory. The Parser DWA’s size
+scales with grammar size and with the mask-equivalence
+quotient of the vocabulary. For modest grammars and the
+quotients we observe (factors of 5–20\(\times \) over the raw 128k
+vocabulary) the artefact is in the tens of megabytes. We have not
+characterised this dependence asymptotically or measured a
+regime in which the Parser DWA does not fit in RAM. Full
+programming-language syntaxes, very large vocabularies, and
+tokenizers that defeat mask-equivalence are all plausible breaking
+points.
+</p><!-- l. 86 --><p class="indent">   A second limit is vocabulary coupling. Compilation is
+per-(grammar, vocabulary): token bytes determine Terminal-DWA
+paths and Parser-DWA weights, so a tokenizer change forces a
+full recompile. In deployed serving stacks this is normally
+amortized across a fixed model and tokenizer, but it is expensive
+when it happens.
+</p><!-- l. 92 --><p class="indent">   A third limit is the constraint class itself. Many real-world
+constraints are not context-free: variable-scoping rules,
+type-correctness, and value uniqueness in JSON schemas.
+<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>gives up exactness on these the moment the constraint
+stops being expressible as a CFG. A natural extension, outlined
+in §<a href="#future-work">12<!-- tex4ht:ref: sec:disc-futures  --></a>, is to attach a small external state to each GSS branch and
+consult it at accepting DWA states. We have not built this and
+treat it as future work.
+</p><!-- l. 100 --><p class="indent">   A fourth limit is ambiguity blow-up. The GSS handles
+ambiguity gracefully in the common case, but pathological
+grammars can still cause stack forks that scale super-linearly in
+generation length. Restricting to LR(1)-compatible grammars
+eliminates this risk; admission control along these lines is
+appropriate for SLA-bound services.
+</p>
+<!-- l. 106 --><p class="noindent"><span class="paragraphHead" id="future-work"><a id="x1-7900012"></a><span class="ecbx-1095">Future work.</span></span>
+   Each of the following directions is opened by a specific
+property of the construction.
+</p><!-- l. 111 --><p class="indent">   The first is unifying <span class="eccc1095-"><span class="small-caps">Mask</span> </span>and <span class="eccc1095-"><span class="small-caps">Commit</span></span>, which already share
+the same stack-effect automata. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>uses their composed read
+prefixes to test admissibility, while <span class="eccc1095-"><span class="small-caps">Commit</span> </span>uses the full rewrites
+to update the parser stack after a token is chosen. A natural next
+step is to share more of the traversal and cache structure
+between these two uses, so the walk that proves a token
+admissible also exposes the rewrite information needed if
+that token is chosen. The question is whether the extra
+compiled state improves locality enough to justify the larger
+artifact.
+</p><!-- l. 120 --><p class="indent">   A second direction is opened by the walk being small and the
+GSS sharing common prefixes: multi-position masks. Speculative
+decoding asks for masks at several future positions at once, and
+running the walk from multiple GSS frontiers in parallel is
+realistic because the common-prefix structure shares most of the
+work. The interface to a speculative decoder is the right place to
+materialise this generalisation.
+</p><!-- l. 127 --><p class="indent">   A third direction follows from the construction being
+parametric in the weight semiring: richer weights. We use the
+Boolean lattice because we want exact masks. Swapping in a
+probability semiring would give per-token validity probabilities at
+the cost of switching from bitvector AND to floating-point
+multiply, the natural compilation target for soft constraints or
+grammar-aware reranking; a tropical semiring would give
+minimum-cost completion scores. None of these change the
+structure of the construction.
+</p><!-- l. 135 --><p class="indent">   The fourth direction exploits the factorisation behind the
+Parser DWA, bracketed internal state and joint indexing of
+inputs: a hybrid of a CFG and a small auxiliary state. Type
+systems, scoping rules, and uniqueness constraints all factor as “a
+CFG part plus a small auxiliary state”, so the CFG part can be
+precompiled exactly while the auxiliary state is consulted
+only at accepting states. This preserves the runtime cost
+profile on the CFG part while losing the “one walk, whole
+mask” property for the context-sensitive part. We see it as
+the most direct next step toward making GCD usable on
+whole programming languages, not just their context-free
+skeletons.
+
+
+</p>
+<h3 class="sectionHead" id="conclusion"><span class="titlemark">13   </span> <a id="x1-8000013"></a>Conclusion</h3>
+<!-- l. 8 --><p class="noindent"><span class="eccc1095-"><span class="small-caps">Merlon</span> </span>treats grammar-constrained decoding as a precomputation
+problem. Joint (lexer-state, vocabulary-token) indexing,
+push/read cancellation, and weighted determinization together
+turn a per-step parser simulation into a single deterministic walk
+over a compiled automaton. The result is microsecond-scale
+masking with a much tighter measured tail on the evaluated
+JSON-schema and tool-call workloads. This does not make online
+systems obsolete: for first-use JSON schemas, llguidance is often
+the better engineering choice and is already fast enough for many
+deployments. The contribution of <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is a more general
+one: exact token admissibility for normalized CFGs with a
+simple, predictable hot path and lexer/commit semantics,
+paid for by heavier compilation, a fixed vocabulary, and a
+CFG-only constraint surface. These are the kinds of costs serving
+systems already pay for caching, batching, and compilation
+elsewhere in the stack. The technique fits that regime, and
+we expect the construction to extend cleanly to the richer
+constraints that production systems are now being asked to
+enforce.
+</p><!-- l. 1 --><p class="noindent">
+</p>
+<h3 class="likesectionHead" id="references"><a id="x1-8100013"></a>References</h3>
+<!-- l. 1 --><p class="noindent">
+</p><div class="thebibliography">
+<p class="bibitem"><span class="biblabel">
+<a id="Xaycock2001faster"></a>[1] <span class="bibsp">   </span></span>John  Aycock,  R. Nigel  Horspool,  Jan  Janoušek,
+    and  Bořivoj  Melichar.    Even  faster  generalized  LR
+    parsing. In <span class="ecti-1095">Acta Informatica</span>, volume 37, pages 633–651.
+    Springer, 2001.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xbeurer2024domino"></a>[2] <span class="bibsp">   </span></span>Luca  Beurer-Kellner,  Marc  Fischer,  and  Martin
+    Vechev.       Guiding   LLMs   the   right   way:   Fast,
+    non-invasive  constrained  generation.    In  <span class="ecti-1095">Advances  in
+    </span><span class="ecti-1095">Neural Information Processing Systems (NeurIPS)</span>, 2024.
+    arXiv:2403.06988.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xchen2025pre3"></a>[3] <span class="bibsp">   </span></span>Junyi  Chen,  Shihao  Bai,  Zaijun  Wang,  Siyu  Wu,
+    Chuheng Du, Hailong Yang, Ruihao Gong, Shengzhong
+    Liu, and Fan Wu. Pre\(^3\): Enabling deterministic pushdown
+    automata  for  faster  structured  LLM  generation.    In
+    <span class="ecti-1095">Proceedings   of   the   63rd   Annual   Meeting   of   the
+    </span><span class="ecti-1095">Association for Computational Linguistics (ACL)</span>, 2025.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xdenny2010ielr"></a>[4] <span class="bibsp">   </span></span>Joel E. Denny and Brian A. Malloy.  The IELR(1)
+    algorithm for generating minimal LR(1) parser tables for
+    non-LR(1) grammars with conflict resolution.  <span class="ecti-1095">Science
+    </span><span class="ecti-1095">of Computer Programming</span>, 75(11):943–979, 2010.  doi:
+    10.1016/j.scico.2009.08.001.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xdong2024xgrammar"></a>[5] <span class="bibsp">   </span></span>Yixin  Dong,  Charlie F.  Shi,  Tianqi  Chen,  et al.
+    XGrammar: Flexible and efficient structured generation
+    engine  for  large  language  models.     <span class="ecti-1095">arXiv  preprint
+    </span><span class="ecti-1095">arXiv:2411.15100</span>, 2024.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xdroste2009handbook"></a>[6] <span class="bibsp">   </span></span>Manfred Droste, Werner Kuich, and Heiko Vogler.
+    <span class="ecti-1095">Handbook of Weighted Automata</span>. Springer, 2009.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xfahrenberg2017featured"></a>[7] <span class="bibsp">   </span></span>Uli Fahrenberg and Axel Legay.  Featured weighted
+    automata. <span class="ecti-1095">arXiv preprint arXiv:1702.07484</span>, 2017.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xgeng2023gcd"></a>[8] <span class="bibsp">   </span></span>Saibo  Geng,  Martin  Josifoski,  Maxime  Peyrard,
+    and Robert West.   Grammar-constrained decoding for
+    structured NLP tasks without finetuning. In <span class="ecti-1095">Proceedings
+    </span><span class="ecti-1095">of the 2023 Conference on Empirical Methods in Natural
+    </span><span class="ecti-1095">Language Processing</span>, pages 10932–10952. Association for
+    Computational Linguistics, 2023.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xkoo2024automata"></a>[9] <span class="bibsp">   </span></span>Terry        Koo,        Frederick        Liu,        and
+    Luheng He.   Automata-based constraints for language
+    model decoding.  In <span class="ecti-1095">Conference on Language Modeling
+    </span><span class="ecti-1095">(COLM)</span>, 2024. arXiv:2407.08103.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xli2026psc"></a>[10] <span class="bibsp">   </span></span>Yongmin  Li,  Yihong  Dong,  Jia  Li,  and  Ge Li.
+    Efficient grammar-constrained decoding via parser stack
+    classification.   <span class="ecti-1095">arXiv preprint arXiv:2608.03065</span>,  2026.
+    URL <a class="url" href="https://arxiv.org/abs/2608.03065"><span class="ectt-1095">https://arxiv.org/abs/2608.03065</span></a>.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xllguidance2024"></a>[11] <span class="bibsp">   </span></span>Microsoft. llguidance: Low-level guidance library for
+    constrained                                              decoding.
+    <a class="url" href="https://github.com/guidance-ai/llguidance"><span class="ectt-1095">https://github.com/guidance-ai/llguidance</span></a>,  2024.
+    Core engine for constrained generation in Guidance.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xpark2025flexible"></a>[12] <span class="bibsp">   </span></span>Kanghee Park, Timothy Zhou, and Loris D’Antoni.
+    Flexible and efficient grammar-constrained decoding. In
+    <span class="ecti-1095">Proceedings  of  the  42nd  International  Conference  on
+    </span><span class="ecti-1095">Machine Learning (ICML)</span>, 2025. To appear.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xtomita1985glr"></a>[13] <span class="bibsp">   </span></span>Masaru  Tomita.   An  efficient  context-free  parsing
+    algorithm for natural languages. In <span class="ecti-1095">Proceedings of the 9th
+    </span><span class="ecti-1095">International Joint Conference on Artificial Intelligence</span>,
+    pages 756–764, 1985.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xwillard2023outlines"></a>[14] <span class="bibsp">   </span></span>Brandon T.  Willard  and  Rémi  Louf.    Efficient
+    guided  generation  for  large  language  models.    <span class="ecti-1095">arXiv
+    </span><span class="ecti-1095">preprint arXiv:2307.09702</span>, 2023.
+</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var toggle = document.getElementById('toc-toggle');
+  var sidebar = document.getElementById('toc-sidebar');
+  var overlay = document.getElementById('toc-overlay');
+  var labelSwitch = document.getElementById('label-switch');
+  var savedScroll = sessionStorage.getItem('paperLabelSwitchScroll');
+
+  if (savedScroll) {
+    sessionStorage.removeItem('paperLabelSwitchScroll');
+    if (!window.location.hash) {
+      var targetScroll = parseFloat(savedScroll);
+      if (!Number.isNaN(targetScroll)) {
+        requestAnimationFrame(function() {
+          window.scrollTo(0, targetScroll);
+        });
+      }
+    }
+  }
+
+  if (labelSwitch) {
+    labelSwitch.addEventListener('click', function(event) {
+      event.preventDefault();
+      var target = labelSwitch.getAttribute('data-target') || labelSwitch.getAttribute('href');
+      if (!target) {
+        return;
+      }
+      sessionStorage.setItem('paperLabelSwitchScroll', String(window.scrollY));
+      window.location.href = target + (window.location.hash || '');
+    });
+  }
+
+  if (toggle && sidebar && overlay) {
+    toggle.addEventListener('click', function() {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+
+    // Close on link click (mobile)
+    sidebar.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth < 1100) {
+          sidebar.classList.remove('open');
+          overlay.classList.remove('open');
+        }
+      });
+    });
+  }
+});
+</script>
+</body>
+</html>
