@@ -514,4 +514,11 @@ div.voicenote {
 .preprint-links a {font:600 12px/1.5 'Source Sans 3',sans-serif;color:#205d83;text-decoration:none;border-bottom:1px solid #b9cad4;}
 .preprint-links a:hover {color:#0e405f;border-color:currentColor;}
 .preprint-note {font-size:12px;line-height:1.45;color:#696e76;margin:11px 0 0;}
-@media(max-width:640px){.preprint-header{padding:12px 13px;margin-bottom:22px}.preprint-caption{font-size:12px}.preprint-note{font-size:11px}}
+@media(max-width:640px){
+ .preprint-header{padding:12px 13px;margin-bottom:22px}
+ .preprint-caption{font-size:12px}
+ .preprint-note{font-size:11px}
+ .center>p.noindent{text-align:left;word-spacing:normal;hyphens:none}
+ .center>p.noindent .ecbx-1728{font-family:'Source Sans 3',sans-serif;font-size:1.25em;line-height:1.3;letter-spacing:-.012em}
+ mjx-container[display="true"]{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden}
+}
