@@ -454,7 +454,7 @@ one configuration, \[ \mathrm {Mask}_{\mathrm {rt}}(C) = \{\,v\in \mathcal V : \
 invariant that this runtime mask agrees with the specification:
 \begin {equation}  \label {eq:runtime-invariant} \mathrm {Mask}_{\mathrm {rt}}(C)=\mathrm {Mask}_{L}(u).  \end {equation}
 §<a href="#parser-dwa-construction">5<!-- tex4ht:ref: sec:compilation  --></a> builds the automaton that makes \(\mathrm {Mask}_{\mathrm {rt}}\) a walk; §<a href="#runtime">6<!-- tex4ht:ref: sec:runtime  --></a> gives the walk
-and shows that <span class="eccc1095-"><span class="small-caps">Commit</span> </span>preserves (the runtime invariant) (§<a href="#correctness">7<!-- tex4ht:ref: sec:runtime-correctness  --></a>).
+and shows that <span class="eccc1095-"><span class="small-caps">Commit</span> </span>preserves the runtime invariant (§<a href="#correctness">7<!-- tex4ht:ref: sec:runtime-correctness  --></a>).
 </p><!-- l. 104 --><p class="noindent">
 </p>
 <h4 class="subsectionHead" id="mask-and-commit"><span class="titlemark">2.4   </span> <a id="x1-60002.4"></a>Mask and Commit</h4>
@@ -559,7 +559,7 @@ non-boundary state \(q'\ne q_0\), it has stopped in the middle of a partial
 terminal match that straddles the fragment boundary. In this
 case it is not enough for the parser to accept \(r\): it must also accept
 \(rt\) for some \(t\in \mathrm {CanMatch}(q')\) that could complete the partial match. The <span class="ecti-1095">completed</span>
-lexer relation used in Equation (the mask condition) is therefore \[ \mathrm {Lex}(q,b) = \bigcup _{(r,q')\in \mathrm {Scan}(q,b)} \begin {cases} \{r\}, &amp; q'=q_0,\\ \{rt:t\in \mathrm {CanMatch}(q')\}, &amp; q'\ne q_0. \end {cases} \] Each \(r\in \mathrm {Lex}(q,b)\) is a
+lexer relation used in the mask condition is therefore \[ \mathrm {Lex}(q,b) = \bigcup _{(r,q')\in \mathrm {Scan}(q,b)} \begin {cases} \{r\}, &amp; q'=q_0,\\ \{rt:t\in \mathrm {CanMatch}(q')\}, &amp; q'\ne q_0. \end {cases} \] Each \(r\in \mathrm {Lex}(q,b)\) is a
 complete terminal sequence that scanning \(b\) from \(q\) may yield,
 possibly including a terminal that completes a partial match
 when \(b\) ends mid-terminal, so it is ready for parser-stack
@@ -839,7 +839,7 @@ separately.
 </p>
 <h4 class="subsectionHead" id="mask"><span class="titlemark">6.2   </span> <a id="x1-260006.2"></a>Mask</h4>
 <!-- l. 39 --><p class="noindent">A mask query computes \(\mathrm {Mask}_{\mathrm {rt}}(C)\) from the compact runtime state \(S\). For a
-single represented configuration \((q,\sigma ,e)\), Equation (the mask condition) says that token \(v\)
+single represented configuration \((q,\sigma ,e)\), The mask condition says that token \(v\)
 is admissible when it passes the longest-match exclusion
 check and some terminal sequence induced by \(\beta (v)\) is parseable
 from \(\sigma \). By the definition of \(\widehat E_{q,v}\), the parser-side condition is
@@ -1577,7 +1577,7 @@ simulation.
 <!-- l. 22 --><p class="noindent"><span class="paragraphHead" id="grammarconstrained-decoding"><a id="x1-6600011"></a><span class="ecbx-1095">Grammar-constrained decoding.</span></span>
    Geng et al. [<a href="#Xgeng2023gcd">8</a>] formalized grammar-constrained decoding
 (GCD) by defining a token as valid iff the current prefix can be
-extended to a string in the grammar’s language (the validity definition). The
+extended to a string in the grammar’s language (as defined in Section 2). The
 straightforward implementation tests this condition online for
 every vocabulary token at every step. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>keeps the same
 semantics (§<a href="#languagelevel-mask">2.1<!-- tex4ht:ref: sec:semantics  --></a>) but moves the test offline. Prior systems can be
