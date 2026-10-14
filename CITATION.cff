@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: 'Please cite the preprint using the preferred citation below.'
-title: 'Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata'
+title: 'GLRMask: Constrained Decoding with Boolean Array Weighted Automata'
 authors:
   - family-names: Breen
     given-names: Isaac
@@ -11,6 +11,6 @@ preferred-citation:
   authors:
     - family-names: Breen
       given-names: Isaac
-  title: 'Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata'
+  title: 'GLRMask: Constrained Decoding with Boolean Array Weighted Automata'
   year: 2026
   url: 'https://isaacbreen.github.io/glrmask-preprint/'

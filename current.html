@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en-US" xml:lang="en-US">
-<head><title>Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata — HTML preprint | Isaac Breen</title>
+<head><title>GLRMask: Constrained Decoding with Boolean Array Weighted Automata — HTML preprint | Isaac Breen</title>
 <meta charset="utf-8"/>
 <meta content="TeX4ht (https://tug.org/tex4ht/)" name="generator"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
@@ -108,7 +108,7 @@ window.MathJax = {
 };
 </script>
 <script async="async" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-<link href="paper-style.css?v=fd038319abb9" rel="stylesheet"/>
+<link href="paper-style.css?v=7cca39fcfe02" rel="stylesheet"/>
 
 <style>
 .para-num, .sent-num {
@@ -177,26 +177,28 @@ window.MathJax = {
   background: #8c959f;
 }
 </style>
+<meta name="paper-source-commit" content="2678c68236672e6eb2e847be6a483d302c478c34">
 <meta name="description" content="A technical preprint by Isaac Breen on exact grammar-constrained decoding with Boolean array weighted automata.">
-<meta name="citation_title" content="Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata">
+<meta name="citation_title" content="GLRMask: Constrained Decoding with Boolean Array Weighted Automata">
 <meta name="citation_author" content="Isaac Breen">
 <meta name="citation_publication_date" content="2026/10/09">
-<meta name="citation_online_date" content="2026/10/09">
+<meta name="citation_online_date" content="2026/10/14">
 <meta name="citation_technical_report_institution" content="Independent research">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Exact Grammar-Constrained Decoding with Boolean Array Weighted Automata">
-<meta property="og:description" content="Independent research preprint · Isaac Breen · 9 October 2026">
+<meta property="og:title" content="GLRMask: Constrained Decoding with Boolean Array Weighted Automata">
+<meta property="og:description" content="Independent research preprint · Isaac Breen · revised 14 October 2026">
 <link rel="canonical" href="https://isaacbreen.github.io/glrmask-preprint/">
 </head><body>
 <div class="preprint-header" role="note">
-      <div class="preprint-kicker"><span class="preprint-dot"></span> RESEARCH PREPRINT <span class="preprint-sep">·</span> VERSION 1 <span class="preprint-sep">·</span> 9 OCT 2026</div>
+      <div class="preprint-kicker"><span class="preprint-dot"></span> RESEARCH PREPRINT <span class="preprint-sep">·</span> VERSION 1 <span class="preprint-sep">·</span> REVISED 14 OCT 2026</div>
       <div class="preprint-caption">HTML reading edition · Isaac Breen · Not peer reviewed</div>
       <nav class="preprint-links" aria-label="Preprint links">
+        <a href="publication-review.pdf">PDF edition</a>
         <a href="https://github.com/IsaacBreen/glrmask">GLRMask source ↗</a>
         <a href="https://github.com/IsaacBreen/glrmask-preprint">Preprint archive ↗</a>
         <a href="https://arxiv.org/abs/2608.03065">Related work: PSC ↗</a>
       </nav>
-      <p class="preprint-note">This version describes the weighted-automaton method and cites related work. Performance measurements refer to the August 2026 benchmark snapshot, not necessarily the latest development build.</p>
+      <p class="preprint-note">Evaluation uses the retained 14 October 2026 native AWS run. Headline TBM uses complete valid trajectories accepted by all engines; errors and historical measurements are retained separately. One unpinned wall-clock pass with overlapping checkpoint work does not certify isolated latency. See Evaluation for populations and limitations.</p>
     </div>
 <a aria-label="Switch paragraph and sentence labels" class="labels-on" data-target="current-clean.html" href="current-clean.html" id="label-switch">Labels on</a>
 <nav id="toc-sidebar"><h2>Contents</h2><ul>
@@ -242,8 +244,7 @@ window.MathJax = {
 <li class="toc-h3"><a href="#grammar-normalization">8.2 Grammar Normalization</a></li>
 <li class="toc-h3"><a href="#why-the-read-depth-is-bounded">8.3 Why the Read Depth Is Bounded</a></li>
 <li class="toc-h3"><a href="#-moves">8.4 \(\epsilon \)-Moves</a></li>
-<li class="toc-h3"><a href="#fixed-vocabulary">8.5 Fixed Vocabulary</a></li>
-<li class="toc-h3"><a href="#unsupported-parser-models">8.6 Unsupported Parser Models</a></li>
+<li class="toc-h3"><a href="#unsupported-parser-models">8.5 Unsupported Parser Models</a></li>
 <li class="toc-h2"><a href="#implementation">9 Implementation</a></li>
 <li class="toc-h3"><a href="#glr-tables">9.1 GLR Tables</a></li>
 <li class="toc-h3"><a href="#stackeffect-automata1">9.2 Stack-Effect Automata</a></li>
@@ -253,9 +254,11 @@ window.MathJax = {
 <li class="toc-h3"><a href="#transition-tables">9.6 Transition Tables</a></li>
 <li class="toc-h3"><a href="#gss-traversal">9.7 GSS Traversal</a></li>
 <li class="toc-h3"><a href="#endofsequence">9.8 End-of-Sequence</a></li>
-<li class="toc-h3"><a href="#prefill">9.9 Prefill</a></li>
+<li class="toc-h3"><a href="#commit-and-prefill">9.9 Commit and Prefill</a></li>
 <li class="toc-h3"><a href="#artifact-size">9.10 Artifact Size</a></li>
 <li class="toc-h2"><a href="#evaluation">10 Evaluation</a></li>
+<li class="toc-h3"><a href="#jsonschemabench">10.1 JSONSchemaBench</a></li>
+<li class="toc-h3"><a href="#javascript">10.2 JavaScript</a></li>
 <li class="toc-h2"><a href="#related-work">11 Related Work</a></li>
 <li class="toc-h2"><a href="#discussion">12 Discussion</a></li>
 <li class="toc-h2"><a href="#conclusion">13 Conclusion</a></li>
@@ -264,11 +267,11 @@ window.MathJax = {
 <div id="toc-overlay"></div>
 <div class="center">
 <!-- l. 110 --><p class="noindent"><span class="sent-num">0 A1</span>
-</p><!-- l. 111 --><p class="noindent"><span class="sent-num">0 B1</span> <span class="ecbx-1728">Exact Grammar-Constrained
-</span><span class="ecbx-1728">Decoding with</span><br/>
+</p><!-- l. 111 --><p class="noindent"><span class="sent-num">0 B1</span> <span class="ecbx-1728">GLRMask: Constrained Decoding
+</span><span class="ecbx-1728">with</span><br/>
 <span class="ecbx-1728">Boolean Array Weighted Automata</span><br/><br/>
 <span class="ecrm-1200">Isaac Breen</span><br/><br/>
-October 9, 2026</p></div>
+October 14, 2026</p></div>
 <section class="abstract" role="doc-abstract">
 <h3 class="abstracttitle">
 <span class="ecbx-1000">Abstract</span>
@@ -287,37 +290,30 @@ October 9, 2026</p></div>
      </span><span class="ecrm-1000">optimized systems are already practical; it becomes a
      </span><span class="ecrm-1000">sharper issue for tail predictability and for grammars
      </span><span class="ecrm-1000">whose  lexer/parser  interactions  are  less  JSON-like.
-     </span><span class="ecrm-1000">This  paper  presents  </span><span class="eccc1000-"><span class="small-caps">Merlon</span></span><span class="ecrm-1000">,  a  GCD  system  that
+     </span><span class="ecrm-1000">This paper presents </span><span class="eccc1000-"><span class="small-caps">GLRMask</span></span><span class="ecrm-1000">, a GCD system that
      </span><span class="ecrm-1000">compiles  the  parser-state-dependent  part  of  token
      </span><span class="ecrm-1000">admissibility  ahead  of  time. <span class="sent-num">0 C5</span> Given  a  grammar  and
-     </span><span class="ecrm-1000">a  vocabulary,  </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">constructs  a  deterministic
-     </span><span class="ecrm-1000">weighted automaton, the </span><span class="ecti-1000">Parser DWA</span><span class="ecrm-1000">, whose input
-     </span><span class="ecrm-1000">symbols are parser-stack symbols and whose weights
-     </span><span class="ecrm-1000">are  Boolean  masks  over  lexer-state/token  pairs. <span class="sent-num">0 C6</span> At
-     </span><span class="ecrm-1000">runtime,  mask  generation  feeds  the  parser  stack
-     </span><span class="ecrm-1000">directly into this automaton one symbol at a time,
-     </span><span class="ecrm-1000">with  each  transition’s  Boolean  weight  narrowing
-     </span><span class="ecrm-1000">a  running  set  of  allowed  tokens  as  it  is  taken.
-     </span><span class="ecrm-1000">The  traversal  treats  the  parser  stack  as  read-only.
-     </span><span class="ecrm-1000">State-mutating parser actions are confined to </span><span class="ecti-1000">commit</span><span class="ecrm-1000">,
-     </span><span class="ecrm-1000">which advances the parser with the sampled token. <span class="sent-num">0 C7</span> On
-     </span><span class="ecrm-1000">the 9,558-schema official JSONSchemaBench corpus,
-     </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">achieves 3.05</span> \(\mu \)<span class="ecrm-1000">s median, 10.3</span> \(\mu \)<span class="ecrm-1000">s p99, and 70.1</span> \(\mu \)<span class="ecrm-1000">s
-     </span><span class="ecrm-1000">maximum Time Between Masks (mask plus commit),
-     </span><span class="ecrm-1000">compared with 10.5</span> \(\mu \)<span class="ecrm-1000">s, 223</span> \(\mu \)<span class="ecrm-1000">s, and 14.4 ms for llguidance.
-     </span><span class="ecrm-1000">The trade-off is cold construction:  </span><span class="eccc1000-"><span class="small-caps">Merlon</span> </span><span class="ecrm-1000">is best
-     </span><span class="ecrm-1000">interpreted  as  a  cached  or  precompiled  hot-path
-     </span><span class="ecrm-1000">representation,  while  llguidance  remains  the  better
-     </span><span class="ecrm-1000">choice for many first-use or single-use JSON schemas.</span></p>
+     </span><span class="ecrm-1000">a vocabulary, </span><span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">constructs a deterministic
+     </span><span class="ecrm-1000">weighted   automaton,   the   </span><span class="ecti-1000">Parser   DWA</span><span class="ecrm-1000">,   whose
+     </span><span class="ecrm-1000">input  symbols  are  parser-stack  symbols  and  whose
+     </span><span class="ecrm-1000">weights  are  Boolean  masks  over  lexer-state/token
+     </span><span class="ecrm-1000">pairs. <span class="sent-num">0 C6</span> At  runtime,  mask  generation  traverses  the
+     </span><span class="ecrm-1000">graph-structured parser stack through this automaton
+     </span><span class="ecrm-1000">one symbol at a time, with each transition’s Boolean
+     </span><span class="ecrm-1000">weight  narrowing  a  running  set  of  allowed  tokens
+     </span><span class="ecrm-1000">as  it  is  taken. <span class="sent-num">0 C7</span> The  traversal  treats  the  parser
+     </span><span class="ecrm-1000">stack  as  read-only. <span class="sent-num">0 C8</span> State-mutating  parser  actions
+     </span><span class="ecrm-1000">are  confined  to  </span><span class="ecti-1000">commit</span><span class="ecrm-1000">,  which  advances  the  parser
+     </span><span class="ecrm-1000">with  the  sampled  token. <span class="sent-num">0 C9</span> On  1,734,930  positions  in
+     </span><span class="ecrm-1000">11,277 complete valid JSONSchemaBench trajectories
+     </span><span class="ecrm-1000">accepted   by   all   four   compared   engines,   Static
+     </span><span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">has median Time Between Masks of 2.61</span> \(\mu \)<span class="ecrm-1000">s,
+     </span><span class="ecrm-1000">p99  of  12.15</span> \(\mu \)<span class="ecrm-1000">s  and  maximum  of  283.07</span> \(\mu \)<span class="ecrm-1000">s,  compared
+     </span><span class="ecrm-1000">with 10.63</span> \(\mu \)<span class="ecrm-1000">s, 289.92</span> \(\mu \)<span class="ecrm-1000">s and 6.93 ms for llguidance. <span class="sent-num">0 C10</span> These
+     </span><span class="ecrm-1000">observations are from one unpinned native wall-clock
+     </span><span class="ecrm-1000">AWS run with overlapping checkpoint work; retained
+     </span><span class="ecrm-1000">telemetry does not certify latency isolation.</span></p>
 </section>
-<figure class="figure">
-<!-- l. 149 --><p class="noindent" id="-time-between-masks-over-the-official-jsonschemabench-schemas-the-figure-reports-the-latest-audited-cfa-timing-view-see-secexperiments-for-provenance-"><span class="sent-num">0 D1</span> <img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/b_maskbench_tbm.png" width="289"/> <a id="x1-2r1"></a>
-<a id="x1-3"></a>
-</p>
-<figcaption class="caption"><span class="id">Figure 1:  </span><span class="content">Time  Between  Masks  over  the  9,558  official
-JSONSchemaBench  schemas.  The  figure  reports  the  latest
-audited CFA timing view; see §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> for provenance.          </span></figcaption><!-- tex4ht:label?: x1-2r  -->
-</figure>
 <h3 class="sectionHead" id="introduction"><span class="titlemark">1   </span> <a id="x1-10001"></a>Introduction</h3>
 <!-- l. 7 --><p class="noindent"><span class="sent-num">1 A1</span> Large language models are now routinely asked to produce
 output that must satisfy hard structural constraints: JSON
@@ -354,16 +350,17 @@ parser execution in the token-generation loop. <span class="sent-num">1 E4</span
 JSON workloads, optimized online systems can make this cost
 small enough for ordinary serving. <span class="sent-num">1 E5</span> On less regular grammars, and
 in the tail even on JSON-like workloads, the cost still depends on
-lexer ambiguity and parser ambiguity.</p><!-- l. 21 --><p class="indent"><span class="sent-num">1 F1</span> This paper presents <span class="eccc1095-"><span class="small-caps">Merlon</span></span>, a grammar-constrained
-decoding system that compiles the parser-dependent part of this
-search ahead of time. <span class="sent-num">1 F2</span> Given a grammar and tokenizer vocabulary,
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>constructs a deterministic weighted automaton
-over LR stack symbols whose weights are token masks. <span class="sent-num">1 F3</span> At
-runtime, mask generation runs this automaton on the current
-parser stack, one symbol at a time. <span class="sent-num">1 F4</span> The returned mask is
-the intersection of the weights encountered along this run. <span class="sent-num">1 F5</span> Parser actions are not explored during this traversal. <span class="sent-num">1 F6</span> They
-are confined to commit, after a token has actually been
-sampled.</p><!-- l. 23 --><p class="indent"><span class="sent-num">1 G1</span> The result is an exact CFG-constrained decoder with
+lexer ambiguity and parser ambiguity.</p><!-- l. 21 --><p class="indent"><span class="sent-num">1 F1</span> This paper presents <span class="eccc1095-"><span class="small-caps">GLRMask</span></span>, a grammar-constrained decoding
+system that compiles the parser-dependent part of this search ahead
+of time.<span class="footnote-mark"><a href="#fn1x0" id="fn1x0-bk"><sup class="textsuperscript">1</sup></a></span><a id="x1-1001f1"></a>
+Given a grammar and tokenizer vocabulary, <span class="eccc1095-"><span class="small-caps">GLRMask</span></span>
+constructs a deterministic weighted automaton over LR stack
+symbols whose weights are token masks. <span class="sent-num">1 F2</span> At runtime, mask
+generation runs this automaton on the current parser stack, one
+symbol at a time. <span class="sent-num">1 F3</span> The returned mask is the intersection of the
+weights encountered along this run. <span class="sent-num">1 F4</span> Parser actions are not
+explored during this traversal. <span class="sent-num">1 F5</span> They are confined to commit, after
+a token has actually been sampled.</p><!-- l. 23 --><p class="indent"><span class="sent-num">1 G1</span> The result is an exact CFG-constrained decoder with
 predictable per-token latency. <span class="sent-num">1 G2</span> It handles vocabulary tokens that
 cross grammar-terminal boundaries while preserving the standard
 mask/sample/commit interface. <span class="sent-num">1 G3</span> The parser still determines which
@@ -380,7 +377,8 @@ already highly optimized.</p><!-- l. 25 --><p class="indent"><span class="sent-n
    require  only  the  regular  read  projections  of  composed
    terminal stack effects.
    </dd><dt class="enumerate-enumitem">
-2. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">The  Parser  DWA</span>,  a  compile-time  construction  that
+2. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">The
+   </span><span class="ecbx-1095">Parser DWA</span>, a compact compile-time construction that
    shares the read-prefix languages of all lexer-state/token
    pairs in a single deterministic weighted automaton over
    stack  symbols,  built  by  effect  substitution,  write/read
@@ -392,13 +390,9 @@ already highly optimized.</p><!-- l. 25 --><p class="indent"><span class="sent-n
    longest-match  lexing  and  end-of-sequence  exactly,  and
    applies parser transitions only at commit.
    </dd><dt class="enumerate-enumitem">
-4. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">An       empirical       evaluation      </span>demonstrating
-   microsecond-scale,   tightly   bounded   mask   latency   on
-   realistic structured-output workloads, while also showing
-   the  economic  trade-off:  llguidance  is  usually  the  better
-   cold-start system for single-use JSON schemas, whereas
-   <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>targets  cached  constraints,  tail  predictability,
-   and more general CFG workloads.</dd></dl>
+4. </dt><dd class="enumerate-enumitem"><span class="ecbx-1095">An                  empirical                  evaluation</span>
+   demonstrating  microsecond-scale,  tightly  bounded  mask
+   latency on realistic structured-output workloads.</dd></dl>
 <h3 class="sectionHead" id="mask-semantics"><span class="titlemark">2   </span> <a id="x1-20002"></a>Mask Semantics</h3>
 <!-- l. 7 --><p class="noindent"><span class="sent-num">2 A1</span> This section makes the mask semantics explicit. <span class="sent-num">2 A2</span> It defines the
 language-level mask, the runtime configuration set, and the
@@ -408,8 +402,8 @@ language-level mask, the runtime configuration set, and the
 <!-- l. 14 --><p class="noindent"><span class="sent-num">2.1 A1</span> Let \(L\) be the language recognised by the grammar, and let \(\beta (v)\) be the
 byte string for token \(v\). <span class="sent-num">2.1 A2</span> After prefix \(u\), token \(v\) is valid exactly when \(u\beta (v)\)
 can still be completed to a string in \(L\): \begin {equation}  \label {def:valid-token} \mathrm {Mask}_{L}(u) = \{\,v\in \mathcal V : \exists w,\;u\,\beta (v)\,w\in L\,\}.  \end {equation}
-Everything that follows is an efficient, exact implementation of
-this one set.</p><!-- l. 26 --><p class="noindent"><span class="sent-num">2.1 B1</span>
+The following is an efficient, exact implementation of this one
+set.</p><!-- l. 26 --><p class="noindent"><span class="sent-num">2.1 B1</span>
 </p>
 <h4 class="subsectionHead" id="runtime-state"><span class="titlemark">2.2   </span> <a id="x1-40002.2"></a>Runtime State</h4>
 <!-- l. 29 --><p class="noindent"><span class="sent-num">2.2 A1</span> The runtime never stores the consumed prefix \(u\); it stores a finite
@@ -567,7 +561,7 @@ step.</p><!-- l. 119 --><p class="noindent"><span class="sent-num">3.3 C1</span>
 <h4 class="subsectionHead" id="longestmatch-exclusions"><span class="titlemark">3.4   </span> <a id="x1-110003.4"></a>Longest-Match Exclusions</h4>
 <!-- l. 122 --><p class="noindent"><span class="sent-num">3.4 A1</span> We adopt a longest-match convention for the lexer: a terminal is
 emitted only when the same match can no longer be extended. <span class="sent-num">3.4 A2</span> For example, an identifier-like match <span class="ectt-1095">ab </span>remains tentative while a
-longer match such as <span class="ectt-1095">abc </span>is still possible.</p><!-- l. 127 --><p class="indent"><span class="sent-num">3.4 B1</span> <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>handles tentative terminal boundaries by splitting
+longer match such as <span class="ectt-1095">abc </span>is still possible.</p><!-- l. 127 --><p class="indent"><span class="sent-num">3.4 B1</span> <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>handles tentative terminal boundaries by splitting
 the runtime configuration. <span class="sent-num">3.4 B2</span> At a tentative boundary where
 terminal \(t\) has matched but the same match can continue
 from lexer state \(q'\), the branch that emits \(t\) records \(t\in e(q')\). <span class="sent-num">3.4 B3</span> This
@@ -649,7 +643,7 @@ Thus \(E_r\) is the language of net stack effects for consuming
 </p><!-- l. 157 --><p class="noindent"><span class="sent-num">4.5 F1</span>
 </p>
 <h4 class="subsectionHead" id="read-projection"><span class="titlemark">4.6   </span> <a id="x1-180004.6"></a>Read Projection</h4>
-<!-- l. 161 --><p class="noindent"><span class="sent-num">4.6 A1</span> Only <span class="eccc1095-"><span class="small-caps">Commit</span> </span>needs to update the stack. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>only needs to
+<!-- l. 161 --><p class="noindent"><span class="sent-num">4.6 A1</span> While <span class="eccc1095-"><span class="small-caps">Commit</span> </span>needs to update the stack, <span class="eccc1095-"><span class="small-caps">Mask</span> </span>only needs to
 know whether a terminal sequence \(r\) can be parsed from the
 current stack. <span class="sent-num">4.6 A2</span> We therefore keep only the read prefix: \[ \widehat E_r := \{\,u\in \Gamma ^*: \exists v\in \Gamma ^*,\;u^-v^+\in E_r \,\}. \] Thus \(r\) is
 parseable from stack \(\sigma \) exactly when \(\sigma \) begins with some \(u\in \widehat E_r\): \[ \mathrm {Parseable}(r,\sigma ) \quad \Longleftrightarrow \quad \exists u\in \widehat E_r,\;\exists \alpha :\;\sigma =u\alpha . \] Since a
@@ -821,61 +815,50 @@ surviving token pairs.</p><!-- l. 76 --><p class="indent"><span class="sent-num"
 the full \(Q_{\mathrm {lex}}\times \mathcal V\) domain lets a single Parser DWA serve all lexer
 states at once, and the final projection unions the surviving
 rows.
-</p><!-- l. 80 --><p class="indent"><span class="sent-num">6.2.1 D1</span> Collecting these terms gives the per-query cost model. <span class="sent-num">6.2.1 D2</span> A
-mask query is one Parser-DWA walk over the active stack
-prefixes, and its work is bounded by the number of distinct
-GSS-node/Parser-DWA-state pairs the walk visits times the
-bounded per-terminal read depth, plus the weight operations
-performed along the way. <span class="sent-num">6.2.1 D3</span> GSS sharing unions paths that agree on
-a node/state pair, so each pair is explored once, and the weight
-operations are costed by the range count of the masks combined
-rather than by the vocabulary size \(|\mathcal V|\) (§<a href="#implementation">9<!-- tex4ht:ref: sec:implementation-notes  --></a>). <span class="sent-num">6.2.1 D4</span> The query never
-performs a dense per-token scan over \(\mathcal V\): its cost tracks the local
-stack geometry and the structure of the surviving masks, not the
-size of the vocabulary.</p><!-- l. 91 --><p class="indent"><span class="sent-num">6.2.1 E1</span> In <a href="#x1-6003r1">Example 2.1</a>, after committing \(\texttt {[}\) the runtime holds a short
-stack prefix at lexer state \(q_0\). <span class="sent-num">6.2.1 E2</span> Walking that prefix through the
+</p><!-- l. 80 --><p class="indent"><span class="sent-num">6.2.1 D1</span> In <a href="#x1-6003r1">Example 2.1</a>, after committing \(\texttt {[}\) the runtime holds a short
+stack prefix at lexer state \(q_0\). <span class="sent-num">6.2.1 D2</span> Walking that prefix through the
 Parser DWA accumulates the row that admits exactly \(\{\texttt {[},\texttt {x},\texttt {[[}, \texttt {x]},\texttt {[x}\}\), the
 second line of the table in <a href="#x1-6003r1">Example 2.1</a>, while \(\texttt {]}\) and \(\texttt {]]}\) receive
-empty weights along the walk and are dropped.</p><!-- l. 98 --><p class="noindent"><span class="sent-num">6.2.1 F1</span>
+empty weights along the walk and are dropped.</p><!-- l. 87 --><p class="noindent"><span class="sent-num">6.2.1 E1</span>
 </p>
 <h5 class="subsubsectionHead" id="exclusion-filtering"><span class="titlemark">6.2.2   </span> <a id="x1-280006.2.2"></a>Exclusion Filtering</h5>
-<!-- l. 102 --><p class="noindent"><span class="sent-num">6.2.2 A1</span> First account for longest-match exclusions. <span class="sent-num">6.2.2 A2</span> The runtime uses the
+<!-- l. 91 --><p class="noindent"><span class="sent-num">6.2.2 A1</span> First account for longest-match exclusions. <span class="sent-num">6.2.2 A2</span> The runtime uses the
 precomputed lexer-match table \[ M(q,t) = \{\,v\in \mathcal V: t\in \operatorname {dom}(\mu _{q,\beta (v)})\,\}, \qquad \mathrm {Match}(q,\beta (v))=(\mu _{q,\beta (v)},-). \] Thus \(M(q,t)\) contains exactly the
 vocabulary tokens whose strings match terminal \(t\) when scanned
 from lexer state \(q\). <span class="sent-num">6.2.2 A3</span> For a branch with longest-match exclusion map
 \(e\), define \[ X(e) = \mathcal V \setminus \bigcup _{q'\in \operatorname {dom}(e)}\;\bigcup _{t\in e(q')} M(q',t). \] A token lies in \(X(e)\) exactly when it passes the longest-match
 exclusion check for that branch. <span class="sent-num">6.2.2 A4</span> For a branch under lexer state \(q\),
 the initial accumulator is the mask \(A\in K\) whose \(q\)-row is \(X(e)\) and whose
-other rows are empty.</p><!-- l. 126 --><p class="indent"><span class="sent-num">6.2.2 B1</span> The same branch-local filter is applied before the Parser-DWA
+other rows are empty.</p><!-- l. 115 --><p class="indent"><span class="sent-num">6.2.2 B1</span> The same branch-local filter is applied before the Parser-DWA
 contribution is projected to vocabulary tokens. <span class="sent-num">6.2.2 B2</span> Exclusion filtering
 is therefore a mask-side operation: it removes tokens whose bytes
 would prove that an earlier tentative terminal was emitted too
-early under longest-match lexing.</p><!-- l. 131 --><p class="noindent"><span class="sent-num">6.2.2 C1</span>
+early under longest-match lexing.</p><!-- l. 120 --><p class="noindent"><span class="sent-num">6.2.2 C1</span>
 </p>
 <h4 class="subsectionHead" id="commit"><span class="titlemark">6.3   </span> <a id="x1-290006.3"></a>Commit</h4>
-<!-- l. 134 --><p class="noindent"><span class="sent-num">6.3 A1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>updates \(S\) after a byte fragment \(b\) has been accepted. <span class="sent-num">6.3 A2</span> If \(S\)
+<!-- l. 123 --><p class="noindent"><span class="sent-num">6.3 A1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>updates \(S\) after a byte fragment \(b\) has been accepted. <span class="sent-num">6.3 A2</span> If \(S\)
 represents the configurations reachable after prefix \(u\), then after
 committing \(b\) the new state should represent the configurations
 reachable after prefix \(ub\). <span class="sent-num">6.3 A3</span> During ordinary decoding \(b=\beta (v)\) for the sampled
 token \(v\); during prefill the same operation is applied to prompt
-bytes or partial-completion bytes.</p><!-- l. 141 --><p class="indent"><span class="sent-num">6.3 B1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>starts from each active lexer-state entry in \(S\). <span class="sent-num">6.3 B2</span> For each
+bytes or partial-completion bytes.</p><!-- l. 130 --><p class="indent"><span class="sent-num">6.3 B1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>starts from each active lexer-state entry in \(S\). <span class="sent-num">6.3 B2</span> For each
 represented branch, it scans \(b\) from that lexer state. <span class="sent-num">6.3 B3</span> Scanner
 branches that enter the rejecting state are discarded. <span class="sent-num">6.3 B4</span> Successful
 scanner branches may emit zero or more completed terminals and
 may end either at the boundary state \(q_0\) or in a non-boundary lexer
-state.</p><!-- l. 147 --><p class="indent"><span class="sent-num">6.3 C1</span> Longest-match exclusions are checked during this scan. <span class="sent-num">6.3 C2</span> If the
+state.</p><!-- l. 136 --><p class="indent"><span class="sent-num">6.3 C1</span> Longest-match exclusions are checked during this scan. <span class="sent-num">6.3 C2</span> If the
 branch carries \(t\in e(q')\), and scanning the fragment from lexer state \(q'\)
 matches terminal \(t\), then that branch is discarded. <span class="sent-num">6.3 C3</span> Otherwise the
 longest-match exclusion map is carried forward along the scanner
 branch, with entries updated to refer to the lexer state reached
-after the scanned fragment.</p><!-- l. 153 --><p class="indent"><span class="sent-num">6.3 D1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>then processes the completed terminal matches
+after the scanned fragment.</p><!-- l. 142 --><p class="indent"><span class="sent-num">6.3 D1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>then processes the completed terminal matches
 encountered while scanning \(b\). <span class="sent-num">6.3 D2</span> For each emitted terminal \(t\), it
 advances the corresponding graph-structured stacks according to
 the stack-effect relation \(E_t\). <span class="sent-num">6.3 D3</span> Each applicable rewrite \(u\xrightarrow {t}v\) replaces stack
 prefix \(u\) by stack prefix \(v\), preserving the remaining stack suffix. <span class="sent-num">6.3 D4</span> If
 no rewrite applies, that branch is discarded; if several apply, the
 graph-structured stack represents the resulting branches and
-shares their common suffixes.</p><!-- l. 161 --><p class="indent"><span class="sent-num">6.3 E1</span> If scanning ends at \(q_0\), the emitted terminal sequence is
+shares their common suffixes.</p><!-- l. 150 --><p class="indent"><span class="sent-num">6.3 E1</span> If scanning ends at \(q_0\), the emitted terminal sequence is
 complete, so the resulting stacks are stored under lexer state \(q_0\). <span class="sent-num">6.3 E2</span> If
 scanning ends in a non-boundary state \(q'\ne q_0\), the fragment has ended
 in the middle of a possible terminal. <span class="sent-num">6.3 E3</span> The branch is retained only
@@ -1016,13 +999,11 @@ exclusion updates. <span class="sent-num">7.7 C3</span> Thus it drops no viable 
 no unreachable one. <span class="sent-num">7.7 C4</span> Combined with the mask lemma, the
 invariant proves <a href="#x1-31001r1">Theorem 7.1</a>.</p>
 <h3 class="sectionHead" id="finiteness-and-scope"><span class="titlemark">8   </span> <a id="x1-380008"></a>Finiteness and Scope</h3>
-<!-- l. 7 --><p class="noindent"><span class="sent-num">8 A1</span> The construction is exact for the parser interface it compiles, but
-it is not an unbounded parser packaged as a finite automaton. <span class="sent-num">8 A2</span> This section states the finitary assumptions and the scope
-boundaries they imply.</p><!-- l. 11 --><p class="noindent"><span class="sent-num">8 B1</span>
+<!-- l. 7 --><p class="noindent"><span class="sent-num">8 A1</span>
 </p>
 <h4 class="subsectionHead" id="bounded-terminal-effects"><span class="titlemark">8.1   </span> <a id="x1-390008.1"></a>Bounded Terminal Effects</h4>
 <div class="newtheorem">
-<!-- l. 14 --><p class="noindent"><span class="sent-num">8.1 A1</span> <span class="head">
+<!-- l. 10 --><p class="noindent"><span class="sent-num">8.1 A1</span> <span class="head">
 <a id="x1-39001r1"></a>
 <span class="ecbx-1095">Lemma 8.1 </span>(Finiteness)<span class="ecbx-1095">.</span> </span> <span class="ecti-1095">Suppose              the
 </span><span class="ecti-1095">grammar is normalized to remove right recursion and hidden
@@ -1030,42 +1011,39 @@ boundaries they imply.</p><!-- l. 11 --><p class="noindent"><span class="sent-nu
 </span><span class="ecti-1095">the token-level read-prefix languages </span>\(\widehat E_{q,v}\) <span class="ecti-1095">have bounded depth, and
 </span><span class="ecti-1095">the Parser DWA has bounded stack-read depth.</span></p>
 </div>
-<!-- l. 20 --><p class="indent"><span class="sent-num">8.1 B1</span>
-</p><!-- l. 22 --><p class="noindent"><span class="sent-num">8.1 C1</span> The load-bearing assumption is not that the whole parser is
-finite-state. <span class="sent-num">8.1 C2</span> It is that consuming one terminal has a finite,
-bounded stack effect. <span class="sent-num">8.1 C3</span> In the evaluated GLR implementation,
-grammar normalization gives this property. <span class="sent-num">8.1 C4</span> A GPDA source may
-also provide it directly through its finite terminal-consuming
-transitions.</p><!-- l. 27 --><p class="noindent"><span class="sent-num">8.1 D1</span>
+<!-- l. 16 --><p class="indent"><span class="sent-num">8.1 B1</span>
+</p><!-- l. 18 --><p class="noindent"><span class="sent-num">8.1 C1</span> Consuming one terminal must have a finite, bounded stack effect. <span class="sent-num">8.1 C2</span> In the GLR implementation, grammar normalization gives this
+property. <span class="sent-num">8.1 C3</span> A GPDA source may also provide it directly through its
+finite terminal-consuming transitions.</p><!-- l. 22 --><p class="noindent"><span class="sent-num">8.1 D1</span>
 </p>
 <h4 class="subsectionHead" id="grammar-normalization"><span class="titlemark">8.2   </span> <a id="x1-400008.2"></a>Grammar Normalization</h4>
-<!-- l. 30 --><p class="noindent"><span class="sent-num">8.2 A1</span> The compiler applies several normalization passes before
+<!-- l. 25 --><p class="noindent"><span class="sent-num">8.2 A1</span> The compiler applies several normalization passes before
 stack-effect automata are built. <span class="sent-num">8.2 A2</span> The key step is to remove right
 recursion and hidden left recursion. <span class="sent-num">8.2 A3</span> For a GLR parser of a CFG
 without right and hidden left recursion, Aycock et al. <span class="sent-num">8.2 A4</span> [<a href="#Xaycock2001faster">1</a>] show
 that the number of consecutive reductions between the shifts of
 two adjacent symbols is bounded by a grammar constant. <span class="sent-num">8.2 A5</span> This
 bounds the reduction runs that contribute to a one-terminal stack
-effect.</p><!-- l. 37 --><p class="indent"><span class="sent-num">8.2 B1</span> Other normalization passes serve more local engineering
+effect.</p><!-- l. 32 --><p class="indent"><span class="sent-num">8.2 B1</span> Other normalization passes serve more specific engineering
 purposes. <span class="sent-num">8.2 B2</span> Nullable nonterminals are eliminated to avoid
 zero-length reductions, and long productions are split so that
 reductions pop through several shallower advance steps rather
-than one deep pop concentrated into a single step.</p><!-- l. 42 --><p class="noindent"><span class="sent-num">8.2 C1</span>
+than one deep pop concentrated into a single step.</p><!-- l. 37 --><p class="noindent"><span class="sent-num">8.2 C1</span>
 </p>
 <h4 class="subsectionHead" id="why-the-read-depth-is-bounded"><span class="titlemark">8.3   </span> <a id="x1-410008.3"></a>Why the Read Depth Is Bounded</h4>
-<!-- l. 45 --><p class="noindent"><span class="sent-num">8.3 A1</span> The boundedness argument has three parts.
-</p><!-- l. 47 --><p class="indent"><span class="sent-num">8.3 B1</span> First, each one-terminal stack effect has bounded read and
+<!-- l. 40 --><p class="noindent"><span class="sent-num">8.3 A1</span> The boundedness argument has three parts.
+</p><!-- l. 42 --><p class="indent"><span class="sent-num">8.3 B1</span> First, each one-terminal stack effect has bounded read and
 write prefixes. <span class="sent-num">8.3 B2</span> In the GLR construction, an element of \(E_t\) is a
 bounded reduction run chosen with lookahead \(t\), followed by
 one shift of \(t\). <span class="sent-num">8.3 B3</span> Hence every signed word \(u^-v^+\in E_t\) has bounded read
 and write length. <span class="sent-num">8.3 B4</span> In a finite \(\epsilon \)-free GPDA source, the same
 property follows from the finite transition relation: each
 transition consumes one terminal and rewrites finite stack
-strings.</p><!-- l. 55 --><p class="indent"><span class="sent-num">8.3 C1</span>    Second, token scans are finite. \(\mathrm {Lex}(q,\beta (v))\) is computed by running the
+strings.</p><!-- l. 50 --><p class="indent"><span class="sent-num">8.3 C1</span>    Second, token scans are finite. \(\mathrm {Lex}(q,\beta (v))\) is computed by running the
 lexer DFA over the fixed byte string \(\beta (v)\), so each token induces
 finitely many complete terminal sequences, each of bounded
 length.
-</p><!-- l. 59 --><p class="indent"><span class="sent-num">8.3 D1</span> Third, composition and cancellation do not introduce
+</p><!-- l. 54 --><p class="indent"><span class="sent-num">8.3 D1</span> Third, composition and cancellation do not introduce
 unbounded reads. <span class="sent-num">8.3 D2</span> Composing the bounded terminal effects along
 a token-induced terminal sequence concatenates their signed
 words and applies only the reductions \(p^{+}p^{-}\to \epsilon \) and \(p^{+}q^{-}\to \bot \); neither rule
@@ -1074,83 +1052,73 @@ therefore bounded by the number of terminals in the token
 sequence times the one-terminal read bound. <span class="sent-num">8.3 D4</span> The read projection \(\widehat E_r\)
 keeps only those bounded prefixes. <span class="sent-num">8.3 D5</span> Thus every \(\widehat E_{q,v}\) has bounded
 depth, and the Parser DWA reads only a bounded stack prefix at
-runtime.</p><!-- l. 69 --><p class="noindent"><span class="sent-num">8.3 E1</span>
+runtime.</p><!-- l. 64 --><p class="noindent"><span class="sent-num">8.3 E1</span>
 </p>
 <h4 class="subsectionHead" id="-moves"><span class="titlemark">8.4   </span> <a id="x1-420008.4"></a>\(\epsilon \)-Moves</h4>
-<!-- l. 72 --><p class="noindent"><span class="sent-num">8.4 A1</span> If a source parser contains \(\epsilon \)-moves, those moves must be
+<!-- l. 67 --><p class="noindent"><span class="sent-num">8.4 A1</span> If a source parser contains \(\epsilon \)-moves, those moves must be
 summarized before this interface applies. <span class="sent-num">8.4 A2</span> The compiler consumes
 one-terminal stack effects, so stack changes that occur without
 consuming a terminal must be folded into the surrounding
 terminal-consuming effects. <span class="sent-num">8.4 A3</span> The summarized effects must again
-have a finite, bounded representation.</p><!-- l. 78 --><p class="noindent"><span class="sent-num">8.4 B1</span>
+have a finite, bounded representation.</p><!-- l. 73 --><p class="noindent"><span class="sent-num">8.4 B1</span>
 </p>
-<h4 class="subsectionHead" id="fixed-vocabulary"><span class="titlemark">8.5   </span> <a id="x1-430008.5"></a>Fixed Vocabulary</h4>
-<!-- l. 81 --><p class="noindent"><span class="sent-num">8.5 A1</span> The compiled objects depend on the vocabulary. <span class="sent-num">8.5 A2</span> The Terminal
-DWA is indexed by token byte strings \(\beta (v)\), and Parser-DWA weights
-are Boolean masks over \(Q_{\mathrm {lex}}\times \mathcal V\). <span class="sent-num">8.5 A3</span> Changing the tokenizer or vocabulary
-therefore changes the scan relation and the Parser-DWA weights. <span class="sent-num">8.5 A4</span> In serving deployments this is normally amortized over a fixed
-model and tokenizer; per-request tokenizer changes require
-recompilation.</p><!-- l. 88 --><p class="noindent"><span class="sent-num">8.5 B1</span>
-</p>
-<h4 class="subsectionHead" id="unsupported-parser-models"><span class="titlemark">8.6   </span> <a id="x1-440008.6"></a>Unsupported Parser Models</h4>
-<!-- l. 91 --><p class="noindent"><span class="sent-num">8.6 A1</span> The construction assumes an incremental parser whose
+<h4 class="subsectionHead" id="unsupported-parser-models"><span class="titlemark">8.5   </span> <a id="x1-430008.5"></a>Unsupported Parser Models</h4>
+<!-- l. 76 --><p class="noindent"><span class="sent-num">8.5 A1</span> The construction assumes an incremental parser whose
 configurations represent prefixes that can still be extended to
-complete strings. <span class="sent-num">8.6 A2</span> A bare PDA or prefix-rewriting transition
+complete strings. <span class="sent-num">8.5 A2</span> A bare PDA or prefix-rewriting transition
 system may recognize the same complete language while exposing
 nonviable intermediate configurations; such configurations should
-be trimmed before effects are used. <span class="sent-num">8.6 A3</span> Parsers with unbounded
+be trimmed before effects are used. <span class="sent-num">8.5 A3</span> Parsers with unbounded
 terminal effects, unsummarized \(\epsilon \)-moves, dynamically changing
 vocabularies, or context-sensitive side conditions such as type
 checking and uniqueness are outside the exact finite construction
 described here.</p>
-<h3 class="sectionHead" id="implementation"><span class="titlemark">9   </span> <a id="x1-450009"></a>Implementation</h3>
-<!-- l. 8 --><p class="noindent"><span class="sent-num">9 A1</span> This section records implementation choices that make the
-construction practical without changing its mask semantics.
-</p><!-- l. 11 --><p class="noindent"><span class="sent-num">9 B1</span>
+<h3 class="sectionHead" id="implementation"><span class="titlemark">9   </span> <a id="x1-440009"></a>Implementation</h3>
+<!-- l. 8 --><p class="noindent"><span class="sent-num">9 A1</span>
 </p>
-<h4 class="subsectionHead" id="glr-tables"><span class="titlemark">9.1   </span> <a id="x1-460009.1"></a>GLR Tables</h4>
-<!-- l. 14 --><p class="noindent"><span class="sent-num">9.1 A1</span> The second prerequisite is the parse-table construction. <span class="sent-num">9.1 A2</span> The evaluated implementation uses GLR parsing over
-IELR(1) tables rather than LALR(1) tables, which keeps the
-language-recognition power of canonical LR while retaining
-much of the state merging that makes LALR compact [<a href="#Xdenny2010ielr">4</a>]. <span class="sent-num">9.1 A3</span> The payoff is in the straddling-terminal check of <span class="eccc1095-"><span class="small-caps">Commit</span></span>:
-a candidate completion \(t\in \mathrm {CanMatch}(q')\) can be tested by inspecting the
-parse-table cell for the current top LR state and lookahead \(t\). <span class="sent-num">9.1 A4</span> A
-shift is sufficient, and a reduce action is sufficient as well:
-with LR(1)-precise reduce lookaheads, a reduction listed
-under \(t\) is on a viable path for that same lookahead and
-will expose another justified action, eventually reaching a
-shift of \(t\). <span class="sent-num">9.1 A5</span> With LALR-style lookahead merging, the same
-table-cell test could admit a spurious reduce action; ruling
+<h4 class="subsectionHead" id="glr-tables"><span class="titlemark">9.1   </span> <a id="x1-450009.1"></a>GLR Tables</h4>
+<!-- l. 11 --><p class="noindent"><span class="sent-num">9.1 A1</span> The implementation uses GLR parsing over IELR(1) tables rather
+than LALR(1) tables, which keeps the language-recognition
+power of canonical LR while retaining much of the state
+merging that makes LALR compact [<a href="#Xdenny2010ielr">5</a>]. <span class="sent-num">9.1 A2</span> The payoff is in the
+straddling-terminal check of <span class="eccc1095-"><span class="small-caps">Commit</span></span>: a candidate completion \(t\in \mathrm {CanMatch}(q')\)
+can be tested by inspecting the parse-table cell for the current
+top LR state and lookahead \(t\). <span class="sent-num">9.1 A3</span> A shift is sufficient, and a reduce
+action is sufficient as well: with LR(1)-precise reduce lookaheads,
+a reduction listed under \(t\) is on a viable path for that same
+lookahead and will expose another justified action, eventually
+reaching a shift of \(t\). <span class="sent-num">9.1 A4</span> With LALR-style lookahead merging, the
+same table-cell test could admit a spurious reduce action; ruling
 that out would require an exploratory execution of parser
-actions.</p><!-- l. 28 --><p class="noindent"><span class="sent-num">9.1 B1</span>
+actions.</p><!-- l. 24 --><p class="noindent"><span class="sent-num">9.1 B1</span>
 </p>
-<h4 class="subsectionHead" id="stackeffect-automata1"><span class="titlemark">9.2   </span> <a id="x1-470009.2"></a>Stack-Effect Automata</h4>
-<!-- l. 31 --><p class="noindent"><span class="sent-num">9.2 A1</span> The compiler builds stack-effect automata from terminal-labelled
+<h4 class="subsectionHead" id="stackeffect-automata1"><span class="titlemark">9.2   </span> <a id="x1-460009.2"></a>Stack-Effect Automata</h4>
+<!-- l. 27 --><p class="noindent"><span class="sent-num">9.2 A1</span> The compiler builds stack-effect automata from terminal-labelled
 GLR action runs. <span class="sent-num">9.2 A2</span> Each accepting path records a read prefix and
 the corresponding rewrite template used by <span class="eccc1095-"><span class="small-caps">Commit</span></span>. <span class="sent-num">9.2 A3</span> During
 construction, signed-word cancellation is applied eagerly so that
 pushed-and-read internal symbols do not survive into the read
-projection.</p><!-- l. 37 --><p class="noindent"><span class="sent-num">9.2 B1</span>
+projection.</p><!-- l. 33 --><p class="noindent"><span class="sent-num">9.2 B1</span>
 </p>
-<h4 class="subsectionHead" id="lexer-tables"><span class="titlemark">9.3   </span> <a id="x1-480009.3"></a>Lexer Tables</h4>
-<!-- l. 40 --><p class="noindent"><span class="sent-num">9.3 A1</span> The lexer DFA is compiled into tables for byte transitions,
+<h4 class="subsectionHead" id="lexer-tables"><span class="titlemark">9.3   </span> <a id="x1-470009.3"></a>Lexer Tables</h4>
+<!-- l. 36 --><p class="noindent"><span class="sent-num">9.3 A1</span> The lexer DFA is compiled into tables for byte transitions,
 accepted terminals, \(\mathrm {CanMatch}\), and the vocabulary-indexed match table \(M(q,t)\) of
 §<a href="#exclusion-filtering">6.2.2<!-- tex4ht:ref: sec:lexer-match-table  --></a>. <span class="sent-num">9.3 A2</span> These tables let <span class="eccc1095-"><span class="small-caps">Mask</span> </span>apply longest-match exclusions
-without rescanning the whole vocabulary.</p><!-- l. 46 --><p class="noindent"><span class="sent-num">9.3 B1</span>
+without rescanning the whole vocabulary.</p><!-- l. 42 --><p class="noindent"><span class="sent-num">9.3 B1</span>
 </p>
-<h4 class="subsectionHead" id="parser-dwa-layout"><span class="titlemark">9.4   </span> <a id="x1-490009.4"></a>Parser DWA Layout</h4>
-<!-- l. 49 --><p class="noindent"><span class="sent-num">9.4 A1</span> Substitution groups Terminal-DWA edges by common target
+<h4 class="subsectionHead" id="parser-dwa-layout"><span class="titlemark">9.4   </span> <a id="x1-480009.4"></a>Parser DWA Layout</h4>
+<!-- l. 45 --><p class="noindent"><span class="sent-num">9.4 A1</span> Substitution groups Terminal-DWA edges by common target
 before inserting stack-effect recognizers, sharing subgraphs before
 cancellation and shrinking the NWA that must be determinized. <span class="sent-num">9.4 A2</span> The final Parser DWA is stored as a transition table plus final
 weights; each state represents a set of read-side obligations and
-the surviving \(q,v\) weights at that point.</p><!-- l. 55 --><p class="noindent"><span class="sent-num">9.4 B1</span>
+the surviving \(q,v\) weights at that point.</p><!-- l. 51 --><p class="noindent"><span class="sent-num">9.4 B1</span>
 </p>
-<h4 class="subsectionHead" id="weight-representation"><span class="titlemark">9.5   </span> <a id="x1-500009.5"></a>Weight Representation</h4>
-<!-- l. 58 --><p class="noindent"><span class="sent-num">9.5 A1</span> The compiler never materializes weights as dense \(|Q_{\mathrm {lex}}|\times |\mathcal V|\) Boolean
+<h4 class="subsectionHead" id="weight-representation"><span class="titlemark">9.5   </span> <a id="x1-490009.5"></a>Weight Representation</h4>
+<!-- l. 54 --><p class="noindent"><span class="sent-num">9.5 A1</span> The compiler never materializes weights as dense \(|Q_{\mathrm {lex}}|\times |\mathcal V|\) Boolean
 arrays. <span class="sent-num">9.5 A2</span> Each weight is stored as a <span class="ectt-1095">range-set-blaze </span>range
 map from lexer-state ranges to interned token range sets. <span class="sent-num">9.5 A3</span> Boolean operations are therefore costed by the number of
 stored ranges rather than by the numeric size of the covered
-sets.</p><!-- l. 64 --><p class="indent"><span class="sent-num">9.5 B1</span> The compiler also constructs internal ID spaces for lexer
+sets.</p><!-- l. 60 --><p class="indent"><span class="sent-num">9.5 B1</span> The compiler also constructs internal ID spaces for lexer
 states and tokens and may renumber them using the whole
 collection of weights that will be stored or queried together. <span class="sent-num">9.5 B2</span> The
 goal is not a small maximum ID, but a small number of ranges
@@ -1159,675 +1127,458 @@ both the outer maps and the inner token sets lets repeated
 weights be stored and compared by pointer identity. <span class="sent-num">9.5 B4</span> This
 interning turns mask equivalence into sharing: tokens whose stack
 consequence is identical collapse onto one stored object, which is
-the mechanism behind the vocabulary quotient and the resulting
-artifact size reported in §<a href="#scope-and-limits">12<!-- tex4ht:ref: sec:disc-limits  --></a>.</p><!-- l. 74 --><p class="indent"><span class="sent-num">9.5 C1</span> After determinization, an optional acyclic minimization pass
-removes further redundancy. <span class="sent-num">9.5 C2</span> The pass is behavior-preserving;
-the compiler may skip it when the objects produced by
-substitution, cancellation, and determinization are already small
-enough.</p><!-- l. 79 --><p class="noindent"><span class="sent-num">9.5 D1</span>
+the mechanism behind the vocabulary quotient and the
+resulting artifact size reported in §<a href="#scope-and-limits">12<!-- tex4ht:ref: sec:disc-limits  --></a>. <span class="sent-num">9.5 B5</span> Anecdotally, vocabulary
+equivalence analysis is crucial for keeping compilation times
+practical.</p><!-- l. 71 --><p class="indent"><span class="sent-num">9.5 C1</span> After determinization, an optional acyclic minimization pass
+removes further redundancy. <span class="sent-num">9.5 C2</span> The compiler may skip it when
+the objects produced by substitution, cancellation, and
+determinization are already small enough.</p><!-- l. 76 --><p class="noindent"><span class="sent-num">9.5 D1</span>
 </p>
-<h4 class="subsectionHead" id="transition-tables"><span class="titlemark">9.6   </span> <a id="x1-510009.6"></a>Transition Tables</h4>
-<!-- l. 82 --><p class="noindent"><span class="sent-num">9.6 A1</span> Parser-DWA default transitions compact wildcard stack reads,
-and the runtime stores a transition table that checks the
-explicit parser-state label first and falls back to the default
-label.
-</p><!-- l. 86 --><p class="noindent"><span class="sent-num">9.6 B1</span>
+<h4 class="subsectionHead" id="transition-tables"><span class="titlemark">9.6   </span> <a id="x1-500009.6"></a>Transition Tables</h4>
+<!-- l. 79 --><p class="noindent"><span class="sent-num">9.6 A1</span> The Parser DWA is stored as a transition table, with default
+transitions for wildcard stack reads. <span class="sent-num">9.6 A2</span> The runtime uses an explicit
+transition when one matches the current stack symbol, and
+otherwise uses the default.</p><!-- l. 83 --><p class="noindent"><span class="sent-num">9.6 B1</span>
 </p>
-<h4 class="subsectionHead" id="gss-traversal"><span class="titlemark">9.7   </span> <a id="x1-520009.7"></a>GSS Traversal</h4>
-<!-- l. 89 --><p class="noindent"><span class="sent-num">9.7 A1</span> The same leveled-GSS data structure is reused with different
+<h4 class="subsectionHead" id="gss-traversal"><span class="titlemark">9.7   </span> <a id="x1-510009.7"></a>GSS Traversal</h4>
+<!-- l. 86 --><p class="noindent"><span class="sent-num">9.7 A1</span> The same leveled-GSS data structure is reused with different
 branch annotations: longest-match exclusion maps during
 ordinary runtime state and dense mask accumulators during a
-mask query. <span class="sent-num">9.7 A2</span> This lets the query reuse GSS sharing while changing
-only the per-branch payload.</p><!-- l. 95 --><p class="noindent"><span class="sent-num">9.7 B1</span>
+mask query. <span class="sent-num">9.7 A2</span> This lets the query reuse GSS sharing while
+changing only the per-branch payload. <span class="sent-num">9.7 A3</span> In practice, the details of
+the GSS implementation have a large effect on runtime
+performance.</p><!-- l. 93 --><p class="noindent"><span class="sent-num">9.7 B1</span>
 </p>
-<h4 class="subsectionHead" id="endofsequence"><span class="titlemark">9.8   </span> <a id="x1-530009.8"></a>End-of-Sequence</h4>
-<!-- l. 99 --><p class="noindent"><span class="sent-num">9.8 A1</span> The ordinary vocabulary mask covers byte-emitting tokens
+<h4 class="subsectionHead" id="endofsequence"><span class="titlemark">9.8   </span> <a id="x1-520009.8"></a>End-of-Sequence</h4>
+<!-- l. 97 --><p class="noindent"><span class="sent-num">9.8 A1</span> The ordinary vocabulary mask covers byte-emitting tokens
 governed by \(\beta (v)\). <span class="sent-num">9.8 A2</span> The stop token \(\mathrm {eos}\) is computed separately: its bit is
 set exactly when the consumed prefix is itself a complete string, \(u\in L\). <span class="sent-num">9.8 A3</span> Operationally, a configuration contributes EOS only when the
 lexer is at the terminal-boundary state \(q_0\) and the parser stack is
 accepting on end of input. <span class="sent-num">9.8 A4</span> The \(q_0\) requirement prevents stopping in
 the middle of a partial terminal; the parser acceptance check
 prevents stopping when the current prefix only has a valid
-continuation.</p><!-- l. 108 --><p class="noindent"><span class="sent-num">9.8 B1</span>
+continuation.</p><!-- l. 106 --><p class="noindent"><span class="sent-num">9.8 B1</span>
 </p>
-<h4 class="subsectionHead" id="prefill"><span class="titlemark">9.9   </span> <a id="x1-540009.9"></a>Prefill</h4>
-<!-- l. 111 --><p class="noindent"><span class="sent-num">9.9 A1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>is defined for arbitrary byte fragments, not only for
-bytes of a sampled vocabulary token. <span class="sent-num">9.9 A2</span> The same scanner updates,
-longest-match exclusion updates, and stack-effect rewrites are
-used to consume prompt bytes or cached prefix bytes before
-generation begins. <span class="sent-num">9.9 A3</span> Prefill therefore establishes the same runtime
-invariant as ordinary token-by-token decoding before the first
-<span class="eccc1095-"><span class="small-caps">Mask</span> </span>query is issued.</p><!-- l. 118 --><p class="noindent"><span class="sent-num">9.9 B1</span>
+<h4 class="subsectionHead" id="commit-and-prefill"><span class="titlemark">9.9   </span> <a id="x1-530009.9"></a>Commit and Prefill</h4>
+<!-- l. 109 --><p class="noindent"><span class="sent-num">9.9 A1</span> <span class="eccc1095-"><span class="small-caps">Commit</span> </span>is defined for arbitrary byte fragments. <span class="sent-num">9.9 A2</span> Committing an
+LLM token looks up its byte string and commits those bytes. <span class="sent-num">9.9 A3</span> Prefill uses the same operation directly on the input bytes,
+without first tokenizing them into LLM tokens.</p><!-- l. 114 --><p class="noindent"><span class="sent-num">9.9 B1</span>
 </p>
-<h4 class="subsectionHead" id="artifact-size"><span class="titlemark">9.10   </span> <a id="x1-550009.10"></a>Artifact Size</h4>
-<!-- l. 121 --><p class="noindent"><span class="sent-num">9.10 A1</span> The artifact size is driven by grammar size, vocabulary quotienting,
-and the number of distinct weights after determinization and
-minimization. <span class="sent-num">9.10 A2</span> For modest JSON-schema and tool-call grammars,
-repeated token consequences collapse into shared weights,
-yielding artifacts in the tens of megabytes rather than dense \(|Q_{\mathrm {lex}}|\times |\mathcal V|\)
-masks. <span class="sent-num">9.10 A3</span> Larger grammars, programming-language syntaxes, and
-tokenizers that defeat mask equivalence are plausible pressure
-points.</p>
-<h3 class="sectionHead" id="evaluation"><span class="titlemark">10   </span> <a id="x1-5600010"></a>Evaluation</h3>
-<!-- l. 7 --><p class="noindent"><span class="sent-num">10 A1</span> We measure <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>on JSON-schema workloads from the
-official JSONSchemaBench corpus, and compare against
-llguidance [<a href="#Xllguidance2024">11</a>] as a representative state-of-the-art online baseline. <span class="sent-num">10 A2</span> The comparison is not a claim that fresh-schema compilation
-is always cheaper. <span class="sent-num">10 A3</span> It separates two costs that matter in
-serving systems: cold construction of a constraint object, and
-the hot-path cost of producing masks once that object is
-available.</p>
-<!-- l. 14 --><p class="noindent"><span class="sent-num">10 B1</span> <span class="paragraphHead" id="benchmark-setup"><a id="x1-5700010"></a><span class="ecbx-1095">Benchmark setup.</span></span>
-   The detailed timing tables below use the August 2026 CFA
-JSONSchemaBench result, restricted to the 9,558 schemas in
-JSONSchemaBench’s official <span class="ectt-1095">data/ </span>tree. <span class="sent-num">10 B2</span> MaskBench supplies the
-corresponding validation examples, but its 705 additional
-Handwritten, Synthesized, JME, and MCPspec schemas are
-excluded; BFCL is a separate source. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>contributes
-3,066,674 measured TBMs over 7,976 problems and llguidance
-contributes 3,068,495 over 7,977; 7,970 problems have successful
-token timing for both systems. <span class="sent-num">10 B3</span> Build/TTFM values retain the
-original 12-vCPU <span class="ectt-1095">m8azn.3xlarge </span>measurements. <span class="sent-num">10 B4</span> After fixing a
-post-deserialization lazy-vocabulary materialization bug,
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>runtime timings were refreshed on the same AMD
-EPYC 9R05 M8azn family for every problem whose original
-maximum TBM was at least 25\(\mu \)s (1,292 unique problems). <span class="sent-num">10 B5</span> Thus
-this is an explicitly documented composite timing artifact rather
-than a claim that every number was collected in one process on
-one machine size.</p>
-<!-- l. 29 --><p class="noindent"><span class="sent-num">10 C1</span> <span class="paragraphHead" id="baselines"><a id="x1-5800010"></a><span class="ecbx-1095">Baselines.</span></span>
-   llguidance is used as the online parser-based baseline. <span class="sent-num">10 C2</span> It is a
-strong baseline for the workload studied here: JSON grammars
-are delimiter-separated, and this structure lets llguidance avoid
-expensive parser exploration on most token steps. <span class="sent-num">10 C3</span> Thus the
-comparison should not be read as evidence that online parsing is
-a practical bottleneck for ordinary JSON-schema decoding. <span class="sent-num">10 C4</span> It
-measures the residual hot-path cost, especially tail cost, after
-those optimizations. <span class="sent-num">10 C5</span> We do not include XGrammar in the
-headline comparison: its reported median time-between-mask
-numbers on JSONSchemaBench are within the same order of
-magnitude as llguidance’s, and the structural argument in §<a href="#grammarconstrained-decoding">11<!-- tex4ht:ref: sec:related-gcd-systems  --></a>
-applies to both systems.</p>
-<!-- l. 41 --><p class="noindent"><span class="sent-num">10 D1</span> <span class="paragraphHead" id="mask-latency"><a id="x1-5900010"></a><span class="ecbx-1095">Mask latency.</span></span>
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is consistently faster in the token loop, but the main
-empirical separation is tail predictability rather than median
-usability. llguidance’s median TBM is already small for JSON
-decoding. <span class="sent-num">10 D2</span> In this view, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has median TBM 3.05\(\mu \)s, p99
-10.31\(\mu \)s, p99.9 17.82\(\mu \)s, p99.99 23.94\(\mu \)s, and maximum 70.08\(\mu \)s.
-llguidance has median TBM 10.45\(\mu \)s, p99 222.98\(\mu \)s, p99.9 787.85\(\mu \)s,
-and maximum 14.43ms. <span class="sent-num">10 D3</span> No measured <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>TBM reaches
-75\(\mu \)s; llguidance has 17,787 TBMs at or above 500\(\mu \)s and 864
-at or above 1ms. <span class="sent-num">10 D4</span> These tails matter for very fast decode
-loops and high aggregate service rates, but they do not
-make llguidance impractical for typical single JSON-schema
-generations.</p>
-<div class="table">
-<!-- l. 54 --><p class="indent"><span class="sent-num">10 E1</span>  </p><figure class="float" id="-runtime-time-between-masks-on-the-august-officialjsonschemabench-view-tbm-is-mask-generation-plus-commit-for-one-emitted-token-">
-<a id="x1-59001r1"></a>
-<a id="x1-59002"></a>
-<figcaption class="caption"><span class="id">Table 1: </span><span class="content">Runtime Time Between Masks on the August 2026
-official-JSONSchemaBench  view.  TBM  is  mask  generation
-plus commit for one emitted token.                       </span></figcaption><!-- tex4ht:label?: x1-59001r10  -->
-<div class="tabular">
-<table class="tabular" id="TBL-2"><colgroup id="TBL-2-1g"><col id="TBL-2-1"/><col id="TBL-2-2"/><col id="TBL-2-3"/><col id="TBL-2-4"/><col id="TBL-2-5"/><col id="TBL-2-6"/><col id="TBL-2-7"/></colgroup><tr id="TBL-2-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecbx-0800">System  </span></td><td class="td11" id="TBL-2-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM50 </span></td><td class="td11" id="TBL-2-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM99 </span></td><td class="td11" id="TBL-2-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBM99.9 </span></td><td class="td11" id="TBL-2-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">TBMmax </span></td><td class="td11" id="TBL-2-1-6" style="white-space:nowrap; text-align:right;"> \(&gt;\)<span class="ecbx-0800">500</span> \(\mu \)<span class="ecbx-0800">s </span></td><td class="td11" id="TBL-2-1-7" style="white-space:nowrap; text-align:right;"> \(&gt;\)<span class="ecbx-0800">1 ms </span></td>
-</tr><tr id="TBL-2-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc0800-"><span class="small-caps">Merlon</span> </span></td><td class="td11" id="TBL-2-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">3.05</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10.31</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17.82</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">70.08</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td><td class="td11" id="TBL-2-2-7" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
-</tr><tr id="TBL-2-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-3-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-0800">llguidance </span></td><td class="td11" id="TBL-2-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10.45</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">222.98</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">787.85</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-2-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">14.43 ms </span></td><td class="td11" id="TBL-2-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17,787 </span></td><td class="td11" id="TBL-2-3-7" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">864 </span></td>
-</tr></table></div>
-</figure>
-</div>
-<!-- l. 71 --><p class="indent"><span class="sent-num">10 F1</span> Token-weighted percentiles measure aggregate work, but they
-can dilute schema-level tail risk: long easy generations contribute
-many low-latency tokens, while a short hard schema may cause
-repeated slow masks in one user-visible completion. <span class="sent-num">10 F2</span> We therefore
-also report problem-level tail incidence.</p>
-<div class="table">
-<!-- l. 76 --><p class="indent"><span class="sent-num">10 G1</span>  </p><figure class="float" id="-problemlevel-tail-incidence-on-the-problems-timed-successfully-by-both-systems-a-problem-is-tailproblematic-if-any-measured-example-contains-at-least-two-mask-operations-above-s-has-no-mask-above-s-or-ms-in-the-same-run-">
-<a id="x1-59003r2"></a>
-<a id="x1-59004"></a>
-<figcaption class="caption"><span class="id">Table 2: </span><span class="content">Problem-level tail incidence on the 7,970 problems
-timed   successfully   by   both   systems.   A   problem   is
-tail-problematic if any measured example contains at least
-two mask operations above 500\(\mu \)s. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no mask above
-500\(\mu \)s or 1ms in the same run.                            </span></figcaption><!-- tex4ht:label?: x1-59003r10  -->
-<div class="tabular">
-<table class="tabular" id="TBL-3"><colgroup id="TBL-3-1g"><col id="TBL-3-1"/><col id="TBL-3-2"/><col id="TBL-3-3"/></colgroup><tr id="TBL-3-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-1-1" style="white-space:normal; text-align:left;"> <!-- l. 88 --><p class="noindent"><span class="sent-num">10 H1</span> <span class="ecbx-0800">Definition</span> </p></td><td class="td11" id="TBL-3-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llguidance </span></td><td class="td11" id="TBL-3-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecxc-0800">Merlon </span></td>
-</tr><tr id="TBL-3-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-2-1" style="white-space:normal; text-align:left;"> <!-- l. 90 --><p class="noindent"><span class="sent-num">10 I1</span> <span class="ecrm-0800">Any TBM</span> \(\ge 500\,\mu \mathrm {s}\)                                         </p></td><td class="td11" id="TBL-3-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">855 / 7,970 = 10.73% </span></td><td class="td11" id="TBL-3-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
-</tr><tr id="TBL-3-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-3-1" style="white-space:normal; text-align:left;"> <!-- l. 91 --><p class="noindent"><span class="sent-num">10 J1</span> <span class="ecrm-0800">Any TBM</span> \(\ge 1\,\mathrm {ms}\)                                         </p></td><td class="td11" id="TBL-3-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">142 / 7,970 = 1.78% </span></td><td class="td11" id="TBL-3-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
-</tr><tr id="TBL-3-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-4-1" style="white-space:normal; text-align:left;"> <!-- l. 92 --><p class="noindent"><span class="sent-num">10 K1</span> <span class="ecrm-0800">Tail-problematic:   any   example   has</span>   \(\ge 2\)
- <span class="ecrm-0800">TBMs</span> \(\ge 500\,\mu \mathrm {s}\)                                              </p></td><td class="td11" id="TBL-3-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">577 / 7,970 = 7.24% </span></td><td class="td11" id="TBL-3-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0 </span></td>
-</tr></table></div>
-</figure>
-</div>
-<!-- l. 97 --><p class="noindent"><span class="sent-num">10 L1</span> <span class="paragraphHead" id="cold-start-and-compilation-cost"><a id="x1-6000010"></a><span class="ecbx-1095">Cold start and compilation cost.</span></span>
-   The runtime gain is purchased with precomputation.
-llguidance reaches the first mask much faster: across successful
-builds its median TTFM is 1.11ms and p99 12.02ms. <span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s
-median TTFM is 10.42ms and p99 229.81ms, with the build
-performed on the original 12-vCPU host. <span class="sent-num">10 L2</span> On a cold single-use
-metric, TTFM plus the observed TBMs for the measured
-generation, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>wins 484 of the 7,970 paired timed
-problems; llguidance wins 7,486. <span class="sent-num">10 L3</span> This makes <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>a
-poor choice on the cold path for one-off short JSON-schema
-generations. <span class="sent-num">10 L4</span> The intended deployment shape is a hot constraint
-cache: an online system can serve the cold request immediately,
-while <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles the normalized schema for subsequent
-requests; fixed tool schemas can be compiled ahead of
-deployment.</p>
-<!-- l. 109 --><p class="noindent"><span class="sent-num">10 M1</span> <span class="paragraphHead" id="criticalpath-mask-overrun"><a id="x1-6100010"></a><span class="ecbx-1095">Critical-path mask overrun.</span></span>
-   The hot-path question is whether the mask is ready by the
-next decode boundary. <span class="sent-num">10 M2</span> For a target unconstrained token rate \(H\), let
-\(B=1/H\) be the per-token budget. <span class="sent-num">10 M3</span> For a token whose mask takes \(m_i\) seconds,
-define its mask overrun as \[ o_i(H)=\max \{0, m_i - B\}. \] For an example with \(n\) emitted tokens,
-define critical-path mask-overrun loss as \[ L_H=\frac {\sum _i o_i(H)}{n/H + \sum _i o_i(H)}. \] In a strict batch-1
-implementation that waits for the mask before launching the next
-decode step, \(L_H\) can be interpreted as local accelerator idle time. <span class="sent-num">10 M4</span> In a batched serving system, it should instead be read as
-scheduler pressure: the request may be skipped, rescheduled, or
-delayed rather than literally idling the accelerator. <span class="sent-num">10 M5</span> The
-model therefore isolates one possible critical-path cost of
-masking; it is not a claim that every llguidance overrun
-directly translates into wasted GPU time in a production
-scheduler.</p>
-<div class="table">
-<!-- l. 129 --><p class="indent"><span class="sent-num">10 N1</span>  </p><figure class="float" id="-aggregate-criticalpath-maskoverrun-loss-the-target-rate-is-the-unconstrained-decode-rate-before-masking-effective-rate-is-the-rate-after-adding-mask-overrun-on-the-critical-path-has-no-measurable-overrun-at-these-budgets-">
-<a id="x1-61001r3"></a>
-<a id="x1-61002"></a>
-<figcaption class="caption"><span class="id">Table 3:  </span><span class="content">Aggregate  critical-path  mask-overrun  loss.  The
-target rate is the unconstrained decode rate before masking.
-Effective rate is the rate after adding mask overrun on the
-critical path. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no measurable overrun at these
-budgets.                                               </span></figcaption><!-- tex4ht:label?: x1-61001r10  -->
-<div class="tabular">
-<table class="tabular" id="TBL-4"><colgroup id="TBL-4-1g"><col id="TBL-4-1"/><col id="TBL-4-2"/><col id="TBL-4-3"/><col id="TBL-4-4"/><col id="TBL-4-5"/></colgroup><tr id="TBL-4-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Target </span></td><td class="td11" id="TBL-4-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Budget </span></td><td class="td11" id="TBL-4-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llg loss </span></td><td class="td11" id="TBL-4-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">llg effective </span></td><td class="td11" id="TBL-4-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecxc-0800">Merlon </span><span class="ecbx-0800">loss </span></td>
-</tr><tr id="TBL-4-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2,000 tok/s </span></td><td class="td11" id="TBL-4-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">500</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0.33% </span></td><td class="td11" id="TBL-4-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1,993 tok/s </span></td><td class="td11" id="TBL-4-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
-</tr><tr id="TBL-4-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5,000 tok/s </span></td><td class="td11" id="TBL-4-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">200</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1.91% </span></td><td class="td11" id="TBL-4-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">4,904 tok/s </span></td><td class="td11" id="TBL-4-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
-</tr><tr id="TBL-4-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10,000 tok/s </span></td><td class="td11" id="TBL-4-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">100</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5.40% </span></td><td class="td11" id="TBL-4-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">9,460 tok/s </span></td><td class="td11" id="TBL-4-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">0% </span></td>
-</tr><tr id="TBL-4-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-5-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20,000 tok/s </span></td><td class="td11" id="TBL-4-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">50</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-4-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">12.74% </span></td><td class="td11" id="TBL-4-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">17,451 tok/s </span></td><td class="td11" id="TBL-4-5-5" style="white-space:nowrap; text-align:right;">              \(&lt;0.001\%\) </td>
-</tr></table></div>
-</figure>
-</div>
-<!-- l. 150 --><p class="indent"><span class="sent-num">10 O1</span> A problem is overrun-problematic at rate \(H\) and threshold \(\tau \) if
-any measured example for that problem has \(L_H\ge \tau \). <span class="sent-num">10 O2</span> This incidence view
-is important because token-weighted averages hide whether a
-particular schema causes visible stalls in a generation.</p>
-<div class="table">
-<!-- l. 155 --><p class="indent"><span class="sent-num">10 P1</span>  </p><figure class="float" id="-overrunproblematic-incidence-for-llguidance-has-incidence-at-these-thresholds-through-toks-in-this-run-">
-<a id="x1-61003r4"></a>
-<a id="x1-61004"></a>
-<figcaption class="caption"><span class="id">Table 4:   </span><span class="content">Overrun-problematic   incidence   for   llguidance.
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has 0% incidence at these thresholds through 20,000
-tok/s in this run.                                       </span></figcaption><!-- tex4ht:label?: x1-61003r10  -->
-<div class="tabular">
-<table class="tabular" id="TBL-5"><colgroup id="TBL-5-1g"><col id="TBL-5-1"/><col id="TBL-5-2"/><col id="TBL-5-3"/><col id="TBL-5-4"/></colgroup><tr id="TBL-5-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Target rate </span></td><td class="td11" id="TBL-5-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecbx-0800">Budget </span></td><td class="td11" id="TBL-5-1-3" style="white-space:nowrap; text-align:right;">       \(L_H\ge 5\%\) </td><td class="td11" id="TBL-5-1-4" style="white-space:nowrap; text-align:right;">       \(L_H\ge 10\%\) </td>
-</tr><tr id="TBL-5-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2,000 tok/s </span></td><td class="td11" id="TBL-5-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">500</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">2.56% </span></td><td class="td11" id="TBL-5-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">1.22% </span></td>
-</tr><tr id="TBL-5-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5,000 tok/s </span></td><td class="td11" id="TBL-5-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">200</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">8.77% </span></td><td class="td11" id="TBL-5-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">5.82% </span></td>
-</tr><tr id="TBL-5-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">10,000 tok/s </span></td><td class="td11" id="TBL-5-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">100</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20.85% </span></td><td class="td11" id="TBL-5-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">13.93% </span></td>
-</tr><tr id="TBL-5-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-5-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">20,000 tok/s </span></td><td class="td11" id="TBL-5-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">50</span> \(\mu \)<span class="ecrm-0800">s </span></td><td class="td11" id="TBL-5-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">61.04% </span></td><td class="td11" id="TBL-5-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-0800">38.17% </span></td>
-</tr></table></div>
-</figure>
-</div>
-<!-- l. 174 --><p class="noindent"><span class="sent-num">10 Q1</span> <span class="paragraphHead" id="cpu-maskservice-capacity"><a id="x1-6200010"></a><span class="ecbx-1095">CPU mask-service capacity.</span></span>
-   A second hot-path cost is CPU service time. <span class="sent-num">10 Q2</span> In this
-run the mean TBM is 3.45\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 21.17\(\mu \)s for
-llguidance. <span class="sent-num">10 Q3</span> At high aggregate constrained-token throughput
-across many concurrent users, the difference is a capacity
-question even when individual users decode at ordinary
-speeds.</p>
-<div class="table">
-<!-- l. 180 --><p class="indent"><span class="sent-num">10 R1</span>  </p><figure class="float" id="-approximate-cpu-service-demand-for-mask-generation-using-mean-tbm-from-the-august-officialjsonschemabench-view-values-are-cpuseconds-per-wallclock-second-of-aggregate-constrainedtoken-throughput-">
-<a id="x1-62001r5"></a>
-<a id="x1-62002"></a>
-<figcaption class="caption"><span class="id">Table 5:   </span><span class="content">Approximate   CPU   service   demand   for   mask
-generation,   using   mean   TBM   from   the   August   2026
-official-JSONSchemaBench view. Values are CPU-seconds per
-wall-clock second of aggregate constrained-token throughput.</span></figcaption><!-- tex4ht:label?: x1-62001r10  -->
-<div class="tabular">
-<table class="tabular" id="TBL-6"><colgroup id="TBL-6-1g"><col id="TBL-6-1"/><col id="TBL-6-2"/><col id="TBL-6-3"/></colgroup><tr id="TBL-6-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-1-1" style="white-space:nowrap; text-align:right;"> <span class="ecbx-1000">Agg. tok/s </span></td><td class="td11" id="TBL-6-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecxc-1000">Merlon </span></td><td class="td11" id="TBL-6-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecbx-1000">llguidance </span></td>
-</tr><tr id="TBL-6-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-2-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,000 </span></td><td class="td11" id="TBL-6-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.00345 </span></td><td class="td11" id="TBL-6-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.0212 </span></td>
-</tr><tr id="TBL-6-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-3-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">10,000 </span></td><td class="td11" id="TBL-6-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.0345 </span></td><td class="td11" id="TBL-6-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.212 </span></td>
-</tr><tr id="TBL-6-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-4-1" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">100,000 </span></td><td class="td11" id="TBL-6-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.345 </span></td><td class="td11" id="TBL-6-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2.117 </span></td>
-</tr></table></div>
-</figure>
-</div>
-<!-- l. 199 --><p class="noindent"><span class="sent-num">10 S1</span> <span class="paragraphHead" id="tail-latency"><a id="x1-6300010"></a><span class="ecbx-1095">Tail latency.</span></span>
-   The structural difference between precomputation and online
-parser simulation is most visible in the tail. <span class="sent-num">10 S2</span> Online systems can
-pay for reduction chains, lexer state exploration, and stack forks
-at the unlucky token where they occur; <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>pays for the
-bounded read projection during compilation and then runs a
-bounded walk. <span class="sent-num">10 S3</span> In JSON-schema decoding this is a tail-smoothing
-advantage, not a claim that llguidance is generally too slow. <span class="sent-num">10 S4</span> In the August 2026 official JSONSchemaBench view, the
-maximum recorded TBM is 70.08\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 14.43ms for
-llguidance.</p>
+<h4 class="subsectionHead" id="artifact-size"><span class="titlemark">9.10   </span> <a id="x1-540009.10"></a>Artifact Size</h4>
+<!-- l. 117 --><p class="noindent"><span class="sent-num">9.10 A1</span> The artifact size is driven by grammar size, vocabulary
+quotienting, and the number of distinct weights after
+determinization and minimization. <span class="sent-num">9.10 A2</span> For practical grammars,
+contiguous token IDs collapse into ranges, and repeated
+weights are shared, keeping typical artifact size in the tens of
+megabytes.</p>
+<h3 class="sectionHead" id="evaluation"><span class="titlemark">10   </span> <a id="x1-5500010"></a>Evaluation</h3>
+<!-- l. 4 --><p class="noindent"><span class="sent-num">10 A1</span> We report the retained 14 October 2026 native AWS run for
+Static (FastRuntime), Dynamic (FastBuild), Balanced (O2), and
+llguidance. <span class="sent-num">10 A2</span> The run uses <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>revision <span class="ectt-1095">5657d277 </span>and
+llguidance revision <span class="ectt-1095">f0971424</span>, with the Llama 3.1 8B Instruct
+vocabulary of 128,256 entries. <span class="sent-num">10 A3</span> Measurements are from one native
+wall-clock timing pass on an AWS c8i.8xlarge, Linux x86_64,
+Intel Xeon 6975P-C, with 32 available logical CPUs. <span class="sent-num">10 A4</span> Vocabulary
+preparation is excluded. <span class="sent-num">10 A5</span> One problem runs at a time, with a
+60-second construction timeout and 120-second runtime timeout. <span class="sent-num">10 A6</span> A synthetic global warmup is enabled; real schemas are not
+warmed up. <span class="sent-num">10 A7</span> TBM runs from committing the token allowed by the
+previous mask through the next mask being ready. <span class="sent-num">10 A8</span> TTFM runs
+from schema-dependent construction start through the first ready
+mask. <span class="sent-num">10 A9</span> EOS handling is included inside native ready-mask timing;
+other model-control tokens are excluded unless explicitly
+constrained as exact IDs. <span class="sent-num">10 A10</span> Percentiles use linear interpolation;
+means are arithmetic.</p>
+<!-- l. 19 --><p class="noindent"><span class="sent-num">10 B1</span> <span class="paragraphHead" id="timing-qualification"><a id="x1-5600010"></a><span class="ecbx-1095">Timing qualification.</span></span>
+   The run did not pin CPUs, isolate cores, or reserve SMT
+siblings. <span class="sent-num">10 B2</span> Checkpoint staging, hash verification and publication
+overlapped the living benchmark child. <span class="sent-num">10 B3</span> Retained telemetry
+cannot separate intrinsic work from scheduling, steal-time or
+frequency effects. <span class="sent-num">10 B4</span> These observations do not certify latency
+stabilization or dedicated hardware isolation. <span class="sent-num">10 B5</span> Cross-machine
+changes relative to earlier Mac or Linux runs are not causal
+code-regression evidence.</p><!-- l. 29 --><p class="noindent"><span class="sent-num">10 C1</span>
+</p>
+<h4 class="subsectionHead" id="jsonschemabench"><span class="titlemark">10.1   </span> <a id="x1-5700010.1"></a>JSONSchemaBench</h4>
+<!-- l. 31 --><p class="noindent"><span class="sent-num">10.1 A1</span> The run attempts all 9,558 official JSONSchemaBench schemas
+[<a href="#Xgeng2025jsonschemabench">10</a>], revision <span class="ectt-1095">ba103c73</span>, with 35,339 supplied validation cases;
+1,072 schemas have no supplied case. <span class="sent-num">10.1 A2</span> Schema payloads are
+unchanged. <span class="sent-num">10.1 A3</span> Object properties are recursively reordered into
+schema-declaration order and separators use comma/colon
+followed by one space. <span class="sent-num">10.1 A4</span> The frozen native preparation records
+4,588 reordered tests.</p><!-- l. 38 --><p class="indent"><span class="sent-num">10.1 B1</span> TTFM uses the 8,326 schemas built successfully by every
+engine. <span class="sent-num">10.1 B2</span> Headline TBM follows the current native <span class="ectt-1095">make jsb</span>
+reporter: 11,277 identical, complete valid trajectories accepted by
+every engine, comprising 1,734,930 positions per engine. <span class="sent-num">10.1 B3</span> Incorrect, incomplete and runtime-error trajectories are excluded
+from headline TBM, while all full-run outcomes remain in the
+raw records and are reported separately. <span class="sent-num">10.1 B4</span> This is a finite-fixture
+timing cohort, not a claim of full-language equivalence or
+whole-corpus dominance.</p>
 <figure class="figure">
-<!-- l. 211 --><p class="noindent" id="-tail-behavior-over-the-committed-cfa-sweep-top-tbm-threshold-as-a-function-of-exceedance-probability-bottom-llguidance-multiplier-over-the-same-tail-range-"><span class="sent-num">10 T1</span> <img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/c_tbm_tail_smooth_plot.png" width="289"/> <a id="x1-63001r2"></a>
-<a id="x1-63002"></a>
+<!-- l. 50 --><p class="noindent" id="-jsonschemabench-native-headline-tbm-positions-per-engine-from-complete-valid-trajectories-accepted-by-all-four-engines-one-unpinned-wallclock-pass-checkpoint-work-overlapped-the-benchmark-"><span class="sent-num">10.1 C1</span>  <img alt="PIC" height="242" src="figures/aws-native-20261014/tbm-jsonschema-.png" width="242"/> <a id="x1-57001r1"></a>
+<a id="x1-57002"></a>
 </p>
-<figcaption class="caption"><span class="id">Figure 2:  </span><span class="content">Tail  behavior  over  the  committed  CFA  sweep.
-Top: TBM threshold as a function of exceedance probability.
-Bottom:  llguidance/<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>multiplier  over  the  same  tail
-range.                                                  </span></figcaption><!-- tex4ht:label?: x1-63001r10  -->
+<figcaption class="caption"><span class="id">Figure 1:        </span><span class="content">JSONSchemaBench        native        headline
+TBM, 1,734,930 positions per engine from 11,277 complete
+valid trajectories accepted by all four engines. One unpinned
+wall-clock pass; checkpoint work overlapped the benchmark. </span></figcaption><!-- tex4ht:label?: x1-57001r10  -->
 </figure>
-<!-- l. 216 --><p class="noindent"><span class="sent-num">10 U1</span> <span class="paragraphHead" id="workload-breakdown"><a id="x1-6400010"></a><span class="ecbx-1095">Workload breakdown.</span></span>
-   The category-level measurements follow the same qualitative
-pattern as the aggregate: <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>stays in the low microseconds,
-while llguidance is usually fast enough for JSON-shaped decoding
-but has a wider tail. <span class="sent-num">10 U2</span> Smaller categories are best read as coverage
-checks rather than stable distribution estimates. <span class="sent-num">10 U3</span> These timing
-results are performance measurements over successful runs, not a
-substitute for a semantic-equivalence audit. <span class="sent-num">10 U4</span> The current
-CFA full report defaults intentionally leave discrepancy
-adjudication disabled; semantic validation is run separately when
-required.</p>
-<figure class="figure" id="-additional-cfa-sweep-summaries-for-the-evaluation-section-">
-<div class="subfigure">
-<!-- l. 228 --><p class="noindent"><span class="sent-num">10 V1</span> </p><!-- l. 230 --><p class="noindent"><span class="sent-num">10 W1</span> <img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/b_maskbench_tbm.png" width="289"/> <a id="x1-64001r1"></a></p>
-<div class="caption"><span class="id"><span class="ecrm-1000">(a)  </span></span><span class="content"><span class="ecrm-1000">TBM  summary  points  over  the  official  JSONSchemaBench
-</span><span class="ecrm-1000">population.</span> </span></div>
+<!-- l. 57 --><p class="indent"><span class="sent-num">10.1 D1</span> Static median TBM is 2.61\(\mu \)s and p99 is 12.15\(\mu \)s, compared with
+10.63\(\mu \)s and 289.92\(\mu \)s for llguidance. <span class="sent-num">10.1 D2</span> Static’s measured maximum is
+283.07\(\mu \)s. <span class="sent-num">10.1 D3</span> The same token position is a recurring hotspot in the
+same-source October 11 Linux run; the retained evidence does
+not isolate algorithmic and scheduling contributions. <span class="sent-num">10.1 D4</span> Dynamic
+and Balanced retain separate runtime/build tradeoffs in Tables <a href="#x1-57003r1">1<!-- tex4ht:ref: tab:jsb-tbm  --></a>
+and <a href="#x1-57007r2">2<!-- tex4ht:ref: tab:jsb-startup  --></a>.</p>
+<div class="table">
+<!-- l. 65 --><p class="indent"><span class="sent-num">10.1 E1</span>  </p><figure class="float" id="-jsonschemabench-tbm-in-microseconds-tokenweighted-over-the-native-completevalid-common-cohort-linearinterpolated-percentiles-">
+<a id="x1-57003r1"></a>
+<a id="x1-57004"></a>
+<figcaption class="caption"><span class="id">Table 1:           </span><span class="content">JSONSchemaBench           TBM           in
+microseconds, token-weighted over the native complete-valid
+common cohort. Linear-interpolated percentiles.           </span></figcaption><!-- tex4ht:label?: x1-57003r10  -->
+<!-- tex4ht:inline --><div class="tabular">
+<table class="tabular" id="TBL-2"><colgroup id="TBL-2-1g"><col id="TBL-2-1"/><col id="TBL-2-2"/><col id="TBL-2-3"/><col id="TBL-2-4"/><col id="TBL-2-5"/><col id="TBL-2-6"/></colgroup><tr id="TBL-2-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">System                   </span></td><td class="td11" id="TBL-2-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Median  </span></td><td class="td11" id="TBL-2-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p90  </span></td><td class="td11" id="TBL-2-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99  </span></td><td class="td11" id="TBL-2-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99.9  </span></td><td class="td11" id="TBL-2-1-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Maximum  </span></td>
+</tr><tr id="TBL-2-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Static      </span></td><td class="td11" id="TBL-2-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2.61  </span></td><td class="td11" id="TBL-2-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5.07  </span></td><td class="td11" id="TBL-2-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">12.15  </span></td><td class="td11" id="TBL-2-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">24.94  </span></td><td class="td11" id="TBL-2-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">283.07  </span></td></tr><tr id="TBL-2-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-3-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Dynamic </span></td><td class="td11" id="TBL-2-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">9.12 </span></td><td class="td11" id="TBL-2-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">86.41 </span></td><td class="td11" id="TBL-2-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">239.52 </span></td><td class="td11" id="TBL-2-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">754.22 </span></td><td class="td11" id="TBL-2-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">3,647.84</span></td>
+</tr><tr id="TBL-2-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-4-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Balanced  </span></td><td class="td11" id="TBL-2-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">6.86  </span></td><td class="td11" id="TBL-2-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">30.31  </span></td><td class="td11" id="TBL-2-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">74.77  </span></td><td class="td11" id="TBL-2-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">206.12  </span></td><td class="td11" id="TBL-2-4-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2,140.92  </span></td>
+</tr><tr id="TBL-2-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-2-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                 </span></td><td class="td11" id="TBL-2-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">10.63  </span></td><td class="td11" id="TBL-2-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">40.67  </span></td><td class="td11" id="TBL-2-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">289.92  </span></td><td class="td11" id="TBL-2-5-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,092.63  </span></td><td class="td11" id="TBL-2-5-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">6,931.51  </span></td>
+</tr></table> </div>
+</figure>
 </div>
-<div class="subfigure">
-<!-- l. 236 --><p class="noindent"><span class="sent-num">10 X1</span> </p><!-- l. 238 --><p class="noindent"><span class="sent-num">10 Y1</span> <img alt="PIC" height="289" src="figures/cfa_sweep_20260820_official_jsb/a_maskbench_ttfm.png" width="289"/> <a id="x1-64002r2"></a>
+<figure class="figure">
+<!-- l. 76 --><p class="noindent" id="-ttfm-over-commonbuilt-schemas-a-successful-build-does-not-establish-semantic-correctness-vocabulary-preparation-is-excluded-"><span class="sent-num">10.1 F1</span>  <img alt="PIC" height="242" src="figures/aws-native-20261014/ttfm-jsonschema-.png" width="242"/> <a id="x1-57005r2"></a>
+<a id="x1-57006"></a>
 </p>
-<div class="caption"><span class="id"><span class="ecrm-1000">(b) </span></span><span class="content"><span class="ecrm-1000">TTFM summary points over the same population.</span> </span></div>
-</div> <a id="x1-64003r3"></a>
-<a id="x1-64004"></a>
-<div class="caption"><span class="id">Figure 3:   </span><span class="content">Additional   CFA   sweep   summaries   for   the
-Evaluation section.
-</span></div>
+<figcaption class="caption"><span class="id">Figure 2:  </span><span class="content">TTFM  over  8,326  common-built  schemas.  A
+successful  build  does  not  establish  semantic  correctness.
+Vocabulary preparation is excluded.                      </span></figcaption><!-- tex4ht:label?: x1-57005r10  -->
 </figure>
-<h3 class="sectionHead" id="related-work"><span class="titlemark">11   </span> <a id="x1-6500011"></a>Related Work</h3>
-<!-- l. 7 --><p class="noindent"><span class="sent-num">11 A1</span> We position <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>relative to two bodies of work:
-grammar-constrained decoding systems for LLMs, and the
-parsing and automata-theoretic techniques the construction
-depends on. <span class="sent-num">11 A2</span> Our comparison turns on two questions: where
-parsing work happens (online during decoding, or once at compile
-time), and what grammar class is supported.</p><!-- l. 13 --><p class="indent"><span class="sent-num">11 B1</span> Prior systems often precompute finite-state or lexer-side
-information, cache parts of the runtime check, or optimize parser
-execution during mask generation. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>moves a different
-boundary: it compiles the stack-dependent parser side of masking. <span class="sent-num">11 B2</span> The Parser DWA is a finite weighted automaton over parser-stack
-symbols whose weights are indexed by lexer state and vocabulary
-token, so each mask query becomes a shared walk over active
-parser stacks rather than candidate-by-candidate parser
-simulation.</p>
-<!-- l. 22 --><p class="noindent"><span class="sent-num">11 C1</span> <span class="paragraphHead" id="grammarconstrained-decoding"><a id="x1-6600011"></a><span class="ecbx-1095">Grammar-constrained decoding.</span></span>
-   Geng et al. <span class="sent-num">11 C2</span> [<a href="#Xgeng2023gcd">8</a>] formalized grammar-constrained decoding
-(GCD) by defining a token as valid iff the current prefix can be
-extended to a string in the grammar’s language (as defined in Section 2). <span class="sent-num">11 C3</span> The
-straightforward implementation tests this condition online for
-every vocabulary token at every step. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>keeps the same
-semantics (§<a href="#languagelevel-mask">2.1<!-- tex4ht:ref: sec:semantics  --></a>) but moves the test offline. <span class="sent-num">11 C4</span> Prior systems can be
-read along one axis: how much of that test they move offline, and
-at what fidelity.</p><!-- l. 33 --><p class="indent"><span class="sent-num">11 D1</span> At one end, several systems precompute only the regular part
-of the check. <span class="sent-num">11 D2</span> Outlines [<a href="#Xwillard2023outlines">14</a>] compiles a regular expression
-into a token-level finite automaton, after which masks are
-precomputed transition-table lookups; this is fast precisely
-because regular constraints admit DFA-shaped masks, and
-it does not lift to balanced delimiters, nested JSON, or
-programming-language syntax. <span class="sent-num">11 D3</span> Koo et al. <span class="sent-num">11 D4</span> [<a href="#Xkoo2024automata">9</a>] push the same
-precomputed-automaton idea up to deterministic context-free
-languages (DCFLs), but not to ambiguous grammars or general
-CFGs. <span class="sent-num">11 D5</span> DOMINO [<a href="#Xbeurer2024domino">2</a>] precomputes which vocabulary tokens are
-context-independent (validity fixed by the lexer state) and masks
-only the remaining “adaptive” tokens online; it moves the
-regular part offline but leaves a stack-dependent residue on
-the query path, and the adaptive set can still be large on
-grammars with deep reductions. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>instead treats every
-token uniformly: its precomputed weights encode the joint
-dependence on lexer state and stack pattern, so adaptive
-tokens cost no more than context-independent ones at query
-time.</p><!-- l. 50 --><p class="indent"><span class="sent-num">11 E1</span> At the other end, systems for CFG-like constraints keep the
-parser check online, simulating a pushdown or Earley-style parser
-during decoding. <span class="sent-num">11 E2</span> XGrammar [<a href="#Xdong2024xgrammar">5</a>] compiles JSON schemas and
-EBNF grammars into byte-level pushdown automata that
-execute at runtime. llguidance [<a href="#Xllguidance2024">11</a>] runs an Earley parser on a
-separate derivative-based lexer over regex terminals. <span class="sent-num">11 E3</span> Both
-designs are highly effective on JSON-shaped workloads, where
-delimiter structure makes most online checks cheap enough in
-practice. <span class="sent-num">11 E4</span> Their remaining cost is tail and generality: query time
-can still depend on the current lexer and parser state, and
-lexed-grammar systems expose lexer-boundary semantics that
-are not the same as scannerless byte-level CFG semantics.
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles away the stack-dependent parser check for its
-normalized CFG target, paying for that simplicity with heavier
-construction.</p><!-- l. 63 --><p class="indent"><span class="sent-num">11 F1</span> Two systems move along the axis in opposite directions. <span class="sent-num">11 F2</span> Pre\(^3\) [<a href="#Xchen2025pre3">3</a>] compiles an overapproximating deterministic PDA and
-uses online checks to reject the false positives it admits; the
-compiled object is smaller, but masks are not exact and
-correctness depends on the runtime filter, whereas <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
-computes exact masks for normalized CFGs. <span class="sent-num">11 F3</span> Park et al. <span class="sent-num">11 F4</span> [<a href="#Xpark2025flexible">12</a>]
-instead make grammar preprocessing faster so that per-request
-compilation is affordable, keeping masking online; <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
-deliberately accepts a heavier compile to make the runtime walk
-as cheap as possible. <span class="sent-num">11 F5</span> The two efforts are complementary, and the
-right choice depends on whether a grammar is used once or
-thousands of times, a question §<a href="#cold-path-and-hot-path">12<!-- tex4ht:ref: sec:disc-economics  --></a> returns to.</p><!-- l. 76 --><p class="indent"><span class="sent-num">11 G1</span> Across this axis, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>makes a different trade-off: it
-moves the <span class="ecti-1095">exact, stack-dependent </span>parser check offline for
-normalized CFGs. <span class="sent-num">11 G2</span> LR action chains and reductions are
-summarized as terminal stack-effect recognizers at compile time
-and combined into the Parser DWA, a finite weighted automaton
-over parser-stack symbols. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>walks that automaton
-and <span class="eccc1095-"><span class="small-caps">Commit</span> </span>applies terminal rewrite templates; neither
-reconstructs the parser derivation for a candidate token at
-runtime (§<a href="#mask">6.2<!-- tex4ht:ref: sec:runtime-mask  --></a>).</p>
-<!-- l. 84 --><p class="noindent"><span class="sent-num">11 H1</span> <span class="paragraphHead" id="independent-parserstack-classification"><a id="x1-6700011"></a><span class="ecbx-1095">Independent parser-stack classification.</span></span>
-   PSC [<a href="#Xli2026psc">10</a>] likewise moves stack-dependent mask construction
-into preprocessing. <span class="sent-num">11 H2</span> It constructs stack-transformer transducers,
-combines token acceptance conditions into a deterministic
-finite-state classifier, and obtains a precomputed vocabulary mask
-by traversing the current parser stack. <span class="sent-num">11 H3</span> The high-level insight
-that a compiled finite-state structure can read the parser
-stack directly is therefore shared. <span class="sent-num">11 H4</span> Our representation retains
-Boolean weights over lexer-state/token pairs on automaton
-transitions and final states, permitting token-dependent
-information to be factored through shared stack-reading
-structure, rather than only classifying states into output
-masks. <span class="sent-num">11 H5</span> We additionally describe the construction and runtime
-traversal for graph-structured stacks. <span class="sent-num">11 H6</span> These are differences
-of representation and scope; this paper does not include
-a controlled head-to-head performance comparison with
-PSC.</p>
-<!-- l. 99 --><p class="noindent"><span class="sent-num">11 I1</span> <span class="paragraphHead" id="parserbased-masking"><a id="x1-6800011"></a><span class="ecbx-1095">Parser-based masking.</span></span>
-   XGrammar and llguidance keep pushdown or Earley-style
-parser work on the mask path. <span class="sent-num">11 I2</span> This is a good engineering choice
-for fresh JSON schemas: startup is low, and JSON’s delimiter
-structure keeps most steps cheap. <span class="sent-num">11 I3</span> The trade-off is that the
-mask path still performs stateful parser work for the current
-prefix, and the semantics of lexed CFG systems can be
-subtle on arbitrary grammars. <span class="sent-num">11 I4</span> This is the online work that
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles into read projections and Parser-DWA
-weights.</p>
-<!-- l. 107 --><p class="noindent"><span class="sent-num">11 J1</span> <span class="paragraphHead" id="automatabased-masking"><a id="x1-6900011"></a><span class="ecbx-1095">Automata-based masking.</span></span>
-   Outlines and related finite-state systems demonstrate why
-masks are cheap when the constraint state is finite. <span class="eccc1095-"><span class="small-caps">Merlon</span></span>
-preserves that mask shape by compiling bounded stack-prefix
-reads into a finite weighted automaton, extending the finite-state
-idea to the parser-stack conditions needed for normalized
-CFGs.
+<div class="table">
+<!-- l. 82 --><p class="indent"><span class="sent-num">10.1 G1</span>  </p><figure class="float" id="-jsonschemabench-ttfm-in-milliseconds-over-commonbuilt-schemas-one-construction-observation-per-schema-and-engine-in-this-run-">
+<a id="x1-57007r2"></a>
+<a id="x1-57008"></a>
+<figcaption class="caption"><span class="id">Table 2:  </span><span class="content">JSONSchemaBench  TTFM  in  milliseconds  over
+common-built  schemas.  One  construction  observation  per
+schema and engine in this run.                           </span></figcaption><!-- tex4ht:label?: x1-57007r10  -->
+<!-- tex4ht:inline --><div class="tabular">
+<table class="tabular" id="TBL-3"><colgroup id="TBL-3-1g"><col id="TBL-3-1"/><col id="TBL-3-2"/><col id="TBL-3-3"/><col id="TBL-3-4"/><col id="TBL-3-5"/><col id="TBL-3-6"/></colgroup><tr id="TBL-3-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">System                   </span></td><td class="td11" id="TBL-3-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Median  </span></td><td class="td11" id="TBL-3-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p90  </span></td><td class="td11" id="TBL-3-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99  </span></td><td class="td11" id="TBL-3-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99.9  </span></td><td class="td11" id="TBL-3-1-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Maximum  </span></td>
+</tr><tr id="TBL-3-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Static      </span></td><td class="td11" id="TBL-3-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">12.57  </span></td><td class="td11" id="TBL-3-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">78.87  </span></td><td class="td11" id="TBL-3-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">302.30  </span></td><td class="td11" id="TBL-3-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">854.35  </span></td><td class="td11" id="TBL-3-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,293.39  </span></td>
+</tr><tr id="TBL-3-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-3-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Dynamic  </span></td><td class="td11" id="TBL-3-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2.30  </span></td><td class="td11" id="TBL-3-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">6.54  </span></td><td class="td11" id="TBL-3-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">35.85  </span></td><td class="td11" id="TBL-3-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">88.81  </span></td><td class="td11" id="TBL-3-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">274.62  </span></td>
+</tr><tr id="TBL-3-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-4-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Balanced  </span></td><td class="td11" id="TBL-3-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">6.23  </span></td><td class="td11" id="TBL-3-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">18.96  </span></td><td class="td11" id="TBL-3-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">125.49  </span></td><td class="td11" id="TBL-3-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">444.98  </span></td><td class="td11" id="TBL-3-4-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">631.14  </span></td>
+</tr><tr id="TBL-3-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-3-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                 </span></td><td class="td11" id="TBL-3-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0.75  </span></td><td class="td11" id="TBL-3-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1.82  </span></td><td class="td11" id="TBL-3-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">11.11  </span></td><td class="td11" id="TBL-3-5-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">17.90  </span></td><td class="td11" id="TBL-3-5-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">231.01  </span></td>
+</tr></table> </div>
+</figure>
+</div>
+<!-- l. 91 --><p class="indent"><span class="sent-num">10.1 H1</span> Static’s common-build TTFM maximum is 1.293389335s. <span class="sent-num">10.1 H2</span> It occurs at <span class="ectt-1095">Github_ultra–-o21135</span>. <span class="sent-num">10.1 H3</span> Construction takes
+1.293215283s. <span class="sent-num">10.1 H4</span> The all-supported Static maximum is 2.373731268s,
+outside this common-build cohort because llguidance fails
+to build that schema. <span class="sent-num">10.1 H5</span> The two maxima describe different
+populations and are not substituted for one another.</p>
+<!-- l. 98 --><p class="noindent"><span class="sent-num">10.1 I1</span> <span class="paragraphHead" id="coverage-and-correctness"><a id="x1-5800010.1"></a><span class="ecbx-1095">Coverage and correctness.</span></span>
+   All 38,232 JSON engine/schema records remain in the
+retained archive, including 1,923 build errors. <span class="sent-num">10.1 I2</span> Incorrect examples
+are disagreements with expected validation outcomes. <span class="sent-num">10.1 I3</span> Table <a href="#x1-58001r3">3<!-- tex4ht:ref: tab:jsb-outcomes  --></a>
+counts every attempted schema and records outcomes outside the
+timing population.</p>
+<div class="table">
+<!-- l. 104 --><p class="indent"><span class="sent-num">10.1 J1</span>  </p><figure class="float" id="-full-outcomes-on-json-schemas-per-engine-build-columns-count-schemas-incorrect-and-runtimeerror-columns-count-examples-">
+<a id="x1-58001r3"></a>
+<a id="x1-58002"></a>
+<figcaption class="caption"><span class="id">Table 3: </span><span class="content">Full outcomes on 9,558 JSON schemas per engine.
+Build  columns  count  schemas;  incorrect  and  runtime-error
+columns count examples.                                </span></figcaption><!-- tex4ht:label?: x1-58001r10  -->
+<!-- tex4ht:inline --><div class="tabular">
+<table class="tabular" id="TBL-4"><colgroup id="TBL-4-1g"><col id="TBL-4-1"/><col id="TBL-4-2"/><col id="TBL-4-3"/><col id="TBL-4-4"/><col id="TBL-4-5"/></colgroup><tr id="TBL-4-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">System                   </span></td><td class="td11" id="TBL-4-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Build success  </span></td><td class="td11" id="TBL-4-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Build error  </span></td><td class="td11" id="TBL-4-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Incorrect  </span></td><td class="td11" id="TBL-4-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Runtime error  </span></td>
+</tr><tr id="TBL-4-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Static      </span></td><td class="td11" id="TBL-4-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">9,325  </span></td><td class="td11" id="TBL-4-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">233  </span></td><td class="td11" id="TBL-4-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">460  </span></td><td class="td11" id="TBL-4-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0  </span></td>
+</tr><tr id="TBL-4-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-3-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Dynamic  </span></td><td class="td11" id="TBL-4-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">9,326  </span></td><td class="td11" id="TBL-4-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">232  </span></td><td class="td11" id="TBL-4-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">460  </span></td><td class="td11" id="TBL-4-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0  </span></td>
+</tr><tr id="TBL-4-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-4-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Balanced  </span></td><td class="td11" id="TBL-4-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">9,326  </span></td><td class="td11" id="TBL-4-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">232  </span></td><td class="td11" id="TBL-4-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">460  </span></td><td class="td11" id="TBL-4-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">0  </span></td>
+</tr><tr id="TBL-4-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-4-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                 </span></td><td class="td11" id="TBL-4-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">8,332  </span></td><td class="td11" id="TBL-4-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,226  </span></td><td class="td11" id="TBL-4-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">100  </span></td><td class="td11" id="TBL-4-5-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">6  </span></td>
+</tr></table> </div>
+</figure>
+</div>
+<h4 class="subsectionHead" id="javascript"><span class="titlemark">10.2   </span> <a id="x1-5900010.2"></a>JavaScript</h4>
+<!-- l. 125 --><p class="noindent"><span class="sent-num">10.2 A1</span> The practical-JavaScript corpus, revision <span class="ectt-1095">a3738a35</span>, contains 55
+cases: 31 capability fixtures and 24 negative fixtures. <span class="sent-num">10.2 A2</span> All 220
+engine/case builds succeed, but each <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>mode has one
+incorrect example and llguidance has four. <span class="sent-num">10.2 A3</span> Only 51 fixtures are
+correctly evaluated by every engine. <span class="sent-num">10.2 A4</span> No runtime-error examples
+occur. <span class="sent-num">10.2 A5</span> The companion grammar policies differ; this corpus does
+not establish full ECMAScript support or complete-language
+equivalence.</p><!-- l. 132 --><p class="indent"><span class="sent-num">10.2 B1</span> Native headline TBM uses 28 complete valid trajectories
+accepted by all four engines, with 3,805 positions per engine. <span class="sent-num">10.2 B2</span> TTFM contains 55 repeated cold-build case observations of one
+practical-JavaScript grammar, not 55 different grammar samples. <span class="sent-num">10.2 B3</span> The wall-clock protocol and timing qualifications above apply to
+both workloads. <span class="sent-num">10.2 B4</span> There is no minimum-of-20 estimator in this
+AWS run.</p>
+<figure class="figure">
+<!-- l. 140 --><p class="noindent" id="-practicaljavascript-native-headline-tbm-common-complete-valid-trajectories-positions-per-engine-one-unpinned-wallclock-pass-"><span class="sent-num">10.2 C1</span>  <img alt="PIC" height="242" src="figures/aws-native-20261014/tbm-javascript-.png" width="242"/> <a id="x1-59001r3"></a>
+<a id="x1-59002"></a>
 </p>
-<!-- l. 113 --><p class="noindent"><span class="sent-num">11 K1</span> <span class="paragraphHead" id="generalized-parsing"><a id="x1-7000011"></a><span class="ecbx-1095">Generalized parsing.</span></span>
-<span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s runtime state is a graph-structured stack
-(GSS), the data structure introduced by Tomita [<a href="#Xtomita1985glr">13</a>] to
-handle ambiguous LR parsing in cubic worst-case time. <span class="sent-num">11 K2</span> At
-a fork the GSS represents multiple parser configurations
-that share their common stack suffix; configurations that
-reach the same parser state at the same input position are
-merged. <span class="sent-num">11 K3</span> We use the GSS for the same reason Tomita did: it
-collapses ambiguity into shared structure. <span class="sent-num">11 K4</span> The per-target
-merging in our mask query (§<a href="#mask">6.2<!-- tex4ht:ref: sec:runtime-mask  --></a>) is essentially a GSS-style
-sharing argument lifted from input positions to Parser-DWA
-states.</p><!-- l. 125 --><p class="indent"><span class="sent-num">11 L1</span> Naive GLR parsing can exhibit cubic behaviour on grammars
-with hidden left recursion or right-recursive nullable productions. <span class="sent-num">11 L2</span> Aycock et al. <span class="sent-num">11 L3</span> [<a href="#Xaycock2001faster">1</a>] analyse these cases and show that grammar
-normalization bounds the number of consecutive reductions
-between shifts. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>applies that normalization at compile
-time, so the stack-effect recognizers are acyclic and the Parser
-DWA has bounded read depth per terminal. <span class="sent-num">11 L4</span> This is what makes
-the runtime walk a depth-bounded traversal rather than an
-unbounded simulation.</p><!-- l. 134 --><p class="indent"><span class="sent-num">11 M1</span> The push/read cancellation algebra of §<a href="#composition">4.5<!-- tex4ht:ref: sec:cancellation-and-projection  --></a> is a special case of
+<figcaption class="caption"><span class="id">Figure 3:  </span><span class="content">Practical-JavaScript  native  headline  TBM:  28
+common  complete  valid  trajectories,  3,805  positions  per
+engine, one unpinned wall-clock pass.                     </span></figcaption><!-- tex4ht:label?: x1-59001r10  -->
+</figure>
+<div class="table">
+<!-- l. 146 --><p class="indent"><span class="sent-num">10.2 D1</span>  </p><figure class="float" id="-javascript-tbm-in-microseconds-over-the-native-validcommon-cohort-">
+<a id="x1-59003r4"></a>
+<a id="x1-59004"></a>
+<figcaption class="caption"><span class="id">Table 4: </span><span class="content">JavaScript TBM in microseconds over the native
+valid-common cohort.                                   </span></figcaption><!-- tex4ht:label?: x1-59003r10  -->
+<!-- tex4ht:inline --><div class="tabular">
+<table class="tabular" id="TBL-5"><colgroup id="TBL-5-1g"><col id="TBL-5-1"/><col id="TBL-5-2"/><col id="TBL-5-3"/><col id="TBL-5-4"/><col id="TBL-5-5"/><col id="TBL-5-6"/></colgroup><tr id="TBL-5-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">System                   </span></td><td class="td11" id="TBL-5-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Median  </span></td><td class="td11" id="TBL-5-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p90  </span></td><td class="td11" id="TBL-5-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99  </span></td><td class="td11" id="TBL-5-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99.9  </span></td><td class="td11" id="TBL-5-1-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Maximum  </span></td>
+</tr><tr id="TBL-5-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Static      </span></td><td class="td11" id="TBL-5-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">18.25  </span></td><td class="td11" id="TBL-5-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">30.36  </span></td><td class="td11" id="TBL-5-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">47.87  </span></td><td class="td11" id="TBL-5-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">71.11  </span></td><td class="td11" id="TBL-5-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">77.38  </span></td></tr><tr id="TBL-5-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-3-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Dynamic </span></td><td class="td11" id="TBL-5-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">145.48 </span></td><td class="td11" id="TBL-5-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">3,626.08 </span></td><td class="td11" id="TBL-5-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">4,091.70 </span></td><td class="td11" id="TBL-5-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">4,656.85 </span></td><td class="td11" id="TBL-5-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,517.38</span></td>
+</tr><tr id="TBL-5-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-4-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Balanced  </span></td><td class="td11" id="TBL-5-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">69.95  </span></td><td class="td11" id="TBL-5-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,088.80  </span></td><td class="td11" id="TBL-5-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">1,509.59  </span></td><td class="td11" id="TBL-5-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2,016.84  </span></td><td class="td11" id="TBL-5-4-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2,138.95  </span></td>
+</tr><tr id="TBL-5-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-5-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                 </span></td><td class="td11" id="TBL-5-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">856.61  </span></td><td class="td11" id="TBL-5-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">2,521.67  </span></td><td class="td11" id="TBL-5-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">3,096.99  </span></td><td class="td11" id="TBL-5-5-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">3,597.12  </span></td><td class="td11" id="TBL-5-5-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">3,867.91  </span></td>
+</tr></table> </div>
+</figure>
+</div>
+<div class="table">
+<!-- l. 154 --><p class="indent"><span class="sent-num">10.2 E1</span>  </p><figure class="float" id="-javascript-ttfm-in-milliseconds-over-coldbuild-case-observations-sharing-one-grammar-these-are-not-independent-grammar-samples-">
+<a id="x1-59005r5"></a>
+<a id="x1-59006"></a>
+<figcaption class="caption"><span class="id">Table 5: </span><span class="content">JavaScript TTFM in milliseconds over 55 cold-build
+case  observations  sharing  one  grammar.  These  are  not
+independent grammar samples.                           </span></figcaption><!-- tex4ht:label?: x1-59005r10  -->
+<!-- tex4ht:inline --><div class="tabular">
+<table class="tabular" id="TBL-6"><colgroup id="TBL-6-1g"><col id="TBL-6-1"/><col id="TBL-6-2"/><col id="TBL-6-3"/><col id="TBL-6-4"/><col id="TBL-6-5"/><col id="TBL-6-6"/></colgroup><tr id="TBL-6-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">System                   </span></td><td class="td11" id="TBL-6-1-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Median  </span></td><td class="td11" id="TBL-6-1-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p90  </span></td><td class="td11" id="TBL-6-1-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99  </span></td><td class="td11" id="TBL-6-1-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">p99.9  </span></td><td class="td11" id="TBL-6-1-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">Maximum  </span></td>
+</tr><tr id="TBL-6-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-2-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Static      </span></td><td class="td11" id="TBL-6-2-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,099.56  </span></td><td class="td11" id="TBL-6-2-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,152.72  </span></td><td class="td11" id="TBL-6-2-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,223.03  </span></td><td class="td11" id="TBL-6-2-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,225.88  </span></td><td class="td11" id="TBL-6-2-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">5,226.19  </span></td>
+</tr><tr id="TBL-6-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-3-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Dynamic  </span></td><td class="td11" id="TBL-6-3-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">113.03  </span></td><td class="td11" id="TBL-6-3-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">116.87  </span></td><td class="td11" id="TBL-6-3-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">120.69  </span></td><td class="td11" id="TBL-6-3-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">121.66  </span></td><td class="td11" id="TBL-6-3-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">121.77  </span></td>
+</tr><tr id="TBL-6-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-4-1" style="white-space:nowrap; text-align:left;"> <span class="eccc1000-"><span class="small-caps">GLRMask</span> </span><span class="ecrm-1000">Balanced  </span></td><td class="td11" id="TBL-6-4-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">457.85  </span></td><td class="td11" id="TBL-6-4-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">464.32  </span></td><td class="td11" id="TBL-6-4-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">470.41  </span></td><td class="td11" id="TBL-6-4-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">472.25  </span></td><td class="td11" id="TBL-6-4-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">472.46  </span></td>
+</tr><tr id="TBL-6-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-6-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                 </span></td><td class="td11" id="TBL-6-5-2" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">7.97  </span></td><td class="td11" id="TBL-6-5-3" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">8.05  </span></td><td class="td11" id="TBL-6-5-4" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">8.16  </span></td><td class="td11" id="TBL-6-5-5" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">8.20  </span></td><td class="td11" id="TBL-6-5-6" style="white-space:nowrap; text-align:right;"> <span class="ecrm-1000">8.20  </span></td>
+</tr></table> </div>
+</figure>
+</div>
+<!-- l. 163 --><p class="noindent"><span class="sent-num">10.2 F1</span> <span class="paragraphHead" id="provenance-and-historical-results"><a id="x1-6000010.2"></a><span class="ecbx-1095">Provenance and historical results.</span></span>
+   The complete source archive SHA-256 is
+<span class="ectt-1095">0267240e2b842ccbe4408d7144d1ccb4898b310468798488f630fed4df577ba7</span>. <span class="sent-num">10.2 F2</span> The corrected native exports and all error records are retained. <span class="sent-num">10.2 F3</span> The prior October 8 JSON and October 9 JavaScript Mac
+evaluation source and its dated figures remain preserved under
+<span class="ectt-1095">review/paper/history/aws-update-20261014 </span>and their original
+asset paths. <span class="sent-num">10.2 F4</span> Their hardware, calling-thread CPU runtime
+clock and repetition policies differ from this AWS run. <span class="sent-num">10.2 F5</span> No
+timing workload was rerun during data recovery or plot
+correction.</p><!-- l. 4 --><p class="noindent"><span class="sent-num">10.2 G1</span>
+</p>
+<h3 class="sectionHead" id="related-work"><span class="titlemark">11   </span> <a id="x1-6100011"></a>Related Work</h3>
+<!-- l. 7 --><p class="noindent"><span class="sent-num">11 A1</span> <span class="paragraphHead" id="grammarconstrained-decoding"><a id="x1-6200011"></a><span class="ecbx-1095">Grammar-constrained decoding.</span></span>
+   Geng et al. <span class="sent-num">11 A2</span> [<a href="#Xgeng2023gcd">9</a>] formalized grammar-constrained decoding
+(GCD) by defining a token as valid iff the current prefix can be
+extended to a string in the grammar’s language (as defined in Section 2). <span class="sent-num">11 A3</span> The
+straightforward implementation tests this condition online for
+every vocabulary token at every step. <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>keeps the same
+semantics (§<a href="#languagelevel-mask">2.1<!-- tex4ht:ref: sec:semantics  --></a>) but moves the test offline.</p><!-- l. 16 --><p class="indent"><span class="sent-num">11 B1</span> The finite-state construction in Outlines [<a href="#Xwillard2023outlines">19</a>] compiles a
+regular expression into a token-level finite automaton, after
+which masks are precomputed transition-table lookups. <span class="sent-num">11 B2</span> This
+construction supports regular constraints; unbounded nesting
+requires a parser. <span class="sent-num">11 B3</span> The same paper also describes a CFG
+extension using LALR(1) parsing. <span class="sent-num">11 B4</span> Koo et al. <span class="sent-num">11 B5</span> [<a href="#Xkoo2024automata">12</a>] extend
+automata-based decoding to deterministic context-free languages. <span class="sent-num">11 B6</span> Their token-level PDA retains runtime stack-compatible edge
+checks.</p><!-- l. 25 --><p class="indent"><span class="sent-num">11 C1</span> DOMINO [<a href="#Xbeurer2024domino">2</a>] precomputes scanner-state subterminal tries
+and traverses them with an online parser. <span class="sent-num">11 C2</span> Its lookahead setting
+controls how far this traversal follows tokens across terminal
+boundaries; bounded lookahead can exclude otherwise valid
+tokens. <span class="sent-num">11 C3</span> XGrammar [<a href="#Xdong2024xgrammar">6</a>] compiles JSON schemas and EBNF
+grammars into byte-level pushdown automata. <span class="sent-num">11 C4</span> It caches masks
+for context-independent tokens and checks context-dependent
+candidates against the runtime stack. <span class="sent-num">11 C5</span> XGrammar-2 [<a href="#Xli2026xgrammar2">13</a>]
+adds just-in-time compilation and cross-grammar caching;
+context-dependent tokens are checked against the full Earley
+parsing context. llguidance [<a href="#Xllguidance2024">15</a>] runs an Earley parser on a
+separate derivative-based lexer over regex terminals, traversing a
+vocabulary trie to construct masks. <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>handles token
+admissibility through compiled stack-reading weights.</p><!-- l. 40 --><p class="indent"><span class="sent-num">11 D1</span> Pre\(^3\) [<a href="#Xchen2025pre3">4</a>] precomputes prefix-conditioned transitions for LR(1)
+grammars, enabling runtime mask construction by checking
+compiled stack conditions. <span class="sent-num">11 D2</span> Park et al. <span class="sent-num">11 D3</span> [<a href="#Xpark2025flexible">16</a>] make grammar
+preprocessing faster to reduce per-request compilation cost,
+keeping masking online.</p><!-- l. 45 --><p class="indent"><span class="sent-num">11 E1</span> CFGzip [<a href="#Xsullivan2026cfgzip">17</a>] uses offline stack-displacement analysis to
+compute grammar-relative token equivalence classes. <span class="sent-num">11 E2</span> It reduces
+the token space presented to an online grammar engine, which
+still performs the mask checks. <span class="sent-num">11 E3</span> This is related to <span class="eccc1095-"><span class="small-caps">GLRMask</span></span>’s
+vocabulary equivalence analysis, while <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>also compiles
+the stack-dependent mask computation. <span class="sent-num">11 E4</span> Gram2Token [<a href="#Xhua2026gram2token">11</a>]
+compiles deterministic byte-level grammar execution into token
+categories, masks, and transition tables for GPU execution.</p>
+<!-- l. 53 --><p class="noindent"><span class="sent-num">11 F1</span> <span class="paragraphHead" id="parserstack-classification"><a id="x1-6300011"></a><span class="ecbx-1095">Parser-stack classification.</span></span>
+   PSC [<a href="#Xli2026psc">14</a>] likewise moves stack-dependent mask construction
+into preprocessing for deterministic context-free grammars. <span class="sent-num">11 F2</span> It
+constructs stack-transformer transducers, combines token
+acceptance conditions into a deterministic finite-state classifier,
+and obtains a precomputed vocabulary mask by traversing the
+current parser stack. <span class="sent-num">11 F3</span> The high-level insight that a compiled
+finite-state structure can read the parser stack directly is
+therefore shared. <span class="sent-num">11 F4</span> Our representation retains Boolean weights over
+lexer-state/token pairs on automaton transitions and final states,
+permitting token-dependent information to be factored through
+shared stack-reading structure, rather than only classifying states
+into output masks. <span class="sent-num">11 F5</span> We additionally describe the construction and
+runtime traversal for graph-structured stacks. <span class="sent-num">11 F6</span> These are
+differences of representation and scope; this paper does not
+include a controlled head-to-head performance comparison with
+PSC.</p><!-- l. 69 --><p class="indent"><span class="sent-num">11 G1</span> Weave of Formal Thought [<a href="#Xbouayad2026weave">3</a>] also combines generalized
+parsing and speculative lexical hypotheses. <span class="sent-num">11 G2</span> It validates candidate
+subwords by speculative parsing at runtime, whereas <span class="eccc1095-"><span class="small-caps">GLRMask</span></span>
+queries compiled mask weights.</p>
+<!-- l. 73 --><p class="noindent"><span class="sent-num">11 H1</span> <span class="paragraphHead" id="generalized-parsing"><a id="x1-6400011"></a><span class="ecbx-1095">Generalized parsing.</span></span>
+<span class="eccc1095-"><span class="small-caps">GLRMask</span></span>’s runtime state is a graph-structured stack (GSS),
+the data structure introduced by Tomita [<a href="#Xtomita1985glr">18</a>] to handle
+ambiguous LR parsing. <span class="sent-num">11 H2</span> At a fork the GSS represents multiple
+parser configurations that share their common stack suffix;
+configurations that reach the same parser state at the same input
+position are merged. <span class="sent-num">11 H3</span> The per-target merging in our mask query
+(§<a href="#mask">6.2<!-- tex4ht:ref: sec:runtime-mask  --></a>) is essentially a GSS-style sharing argument lifted from
+input positions to Parser-DWA states.</p><!-- l. 84 --><p class="indent"><span class="sent-num">11 I1</span> Aycock et al. <span class="sent-num">11 I2</span> [<a href="#Xaycock2001faster">1</a>] show that, for grammars without right
+recursion or hidden left recursion, the number of consecutive
+reductions between shifts is bounded by a grammar-dependent
+constant. <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>uses this result in the bounded-read-depth
+argument of §<a href="#why-the-read-depth-is-bounded">8.3<!-- tex4ht:ref: sec:bounded-reduction-runs  --></a>.</p><!-- l. 89 --><p class="indent"><span class="sent-num">11 J1</span> The push/read cancellation algebra of §<a href="#composition">4.5<!-- tex4ht:ref: sec:cancellation-and-projection  --></a> is a special case of
 the well-known representation of pushdown transitions as
-elements of a monoid with relations \(P_pR_p\to \epsilon \) and \(P_pR_q\to 0\); compositions are
-then ordinary monoid products, and projection to read
-symbols is a quotient. <span class="sent-num">11 M2</span> Compiling a CFG into a weighted
-automaton whose weights are themselves token sets fits
-into the more general framework of weighted automata
-over semirings [<a href="#Xdroste2009handbook">6</a>, <a href="#Xfahrenberg2017featured">7</a>]: our weights form the Boolean lattice \(\mathbb B^{Q_{\mathrm {lex}}\times \mathcal V}\)
-under \((\lor ,\land )\), and the runtime walk is weighted shortest-path
-evaluation specialised to this lattice. <span class="sent-num">11 M3</span> We use only the Boolean
-lattice here; §<a href="#future-work">12<!-- tex4ht:ref: sec:disc-futures  --></a> discusses retargeting the same walk to richer
-semirings.</p>
-<!-- l. 148 --><p class="noindent"><span class="sent-num">11 N1</span> <span class="paragraphHead" id="structured-output-systems-and-benchmarks"><a id="x1-7100011"></a><span class="ecbx-1095">Structured output systems and benchmarks.</span></span>
-   Structured-output systems increasingly mix JSON schemas,
-tool calls, regular fragments, and context-free fragments. <span class="sent-num">11 N2</span> The
-CFA/MaskBench-style workloads used in §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> exercise this serving
-regime: the same schema or tool grammar is often reused across
-many requests, making compilation and caching central to the
-design trade-off.</p>
-<!-- l. 155 --><p class="noindent"><span class="sent-num">11 O1</span> <span class="paragraphHead" id="positioning-summary"><a id="x1-7200011"></a><span class="ecbx-1095">Positioning summary.</span></span>
-   Table <a href="#x1-72001r6">6<!-- tex4ht:ref: tab:related-comparison  --></a> sketches the design space. <span class="sent-num">11 O2</span> The combination that
-distinguishes <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is exact masks for normalized CFGs,
+elements of a monoid with relations \(P_pR_p\to \epsilon \) and \(P_pR_q\to 0\) for \(p\ne q\); compositions are
+then ordinary monoid products. <span class="sent-num">11 J2</span> The read projection is defined in
+§<a href="#read-projection">4.6<!-- tex4ht:ref: sec:read-projection  --></a>. <span class="sent-num">11 J3</span> Compiling a CFG into a weighted automaton whose weights
+are themselves token sets fits into the more general framework of
+weighted automata over semirings [<a href="#Xdroste2009handbook">7</a>, <a href="#Xfahrenberg2017featured">8</a>]: our weights form the
+Boolean lattice \(\mathbb B^{Q_{\mathrm {lex}}\times \mathcal V}\) under \((\lor ,\land )\), and the runtime walk combines weights
+using these operations.</p>
+<!-- l. 100 --><p class="noindent"><span class="sent-num">11 K1</span> <span class="paragraphHead" id="comparison"><a id="x1-6500011"></a><span class="ecbx-1095">Comparison.</span></span>
+   Table <a href="#x1-65001r6">6<!-- tex4ht:ref: tab:related-comparison  --></a> sketches the design space. <span class="sent-num">11 K2</span> The combination that
+distinguishes <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>is exact masks for normalized CFGs,
 including ambiguous ones, using a finite weighted automaton that
 reads parser stacks directly rather than simulating parser
 transitions at query time.</p>
 <div class="table">
-<!-- l. 162 --><p class="indent"><span class="sent-num">11 P1</span>  </p><figure class="float" id="-where-parsing-work-happens-by-system-">
-<a id="x1-72001r6"></a>
-<a id="x1-72002"></a>
-<figcaption class="caption"><span class="id">Table 6: </span><span class="content">Where parsing work happens, by system.         </span></figcaption><!-- tex4ht:label?: x1-72001r11  -->
+<!-- l. 107 --><p class="indent"><span class="sent-num">11 L1</span>  </p><figure class="float" id="-masking-mechanisms-by-system-">
+<a id="x1-65001r6"></a>
+<a id="x1-65002"></a>
+<figcaption class="caption"><span class="id">Table 6: </span><span class="content">Masking mechanisms by system.                 </span></figcaption><!-- tex4ht:label?: x1-65001r11  -->
 <div class="tabular">
-<table class="tabular" id="TBL-7"><colgroup id="TBL-7-1g"><col id="TBL-7-1"/><col id="TBL-7-2"/><col id="TBL-7-3"/><col id="TBL-7-4"/><col id="TBL-7-5"/></colgroup><tr id="TBL-7-1-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-1-1" style="white-space:nowrap; text-align:left;"> <span class="ecbx-1000">System                   </span></td><td class="td11" id="TBL-7-1-2" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Grammars    </span></td><td class="td11" id="TBL-7-1-3" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Mask construction        </span></td><td class="td11" id="TBL-7-1-4" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Online parsing   </span></td><td class="td11" id="TBL-7-1-5" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Ambiguity  </span></td>
-</tr><tr id="TBL-7-2-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-2-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Outlines                       </span></td><td class="td11" id="TBL-7-2-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Regular       </span></td><td class="td11" id="TBL-7-2-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed DFA          </span></td><td class="td11" id="TBL-7-2-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-2-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
-</tr><tr id="TBL-7-3-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-3-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Koo et al. [</span><a href="#Xkoo2024automata"><span class="ecrm-1000">9</span></a><span class="ecrm-1000">]</span> </td><td class="td11" id="TBL-7-3-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">DCFL        </span></td><td class="td11" id="TBL-7-3-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed automaton      </span></td><td class="td11" id="TBL-7-3-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-3-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
-</tr><tr id="TBL-7-4-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-4-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">XGrammar                   </span></td><td class="td11" id="TBL-7-4-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-4-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Online PDA               </span></td><td class="td11" id="TBL-7-4-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-4-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">supported   </span></td>
-</tr><tr id="TBL-7-5-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-5-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">llguidance                     </span></td><td class="td11" id="TBL-7-5-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Lexed CFG     </span></td><td class="td11" id="TBL-7-5-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Earley + derivative lexer      </span></td><td class="td11" id="TBL-7-5-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-5-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">supported   </span></td>
-</tr><tr id="TBL-7-6-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-6-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">DOMINO                     </span></td><td class="td11" id="TBL-7-6-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-6-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Hybrid (adaptive subset online)  </span></td><td class="td11" id="TBL-7-6-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per adaptive token  </span></td><td class="td11" id="TBL-7-6-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
-</tr><tr id="TBL-7-7-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-7-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">Pre</span>\(^3\)                              </td><td class="td11" id="TBL-7-7-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">DCFL (approx.)  </span></td><td class="td11" id="TBL-7-7-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Online DPDA + filter        </span></td><td class="td11" id="TBL-7-7-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">per token        </span></td><td class="td11" id="TBL-7-7-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
-</tr><tr id="TBL-7-8-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-8-1" style="white-space:nowrap; text-align:left;"> <span class="ecrm-1000">PSC [</span><a href="#Xli2026psc"><span class="ecrm-1000">10</span></a><span class="ecrm-1000">]                      </span></td><td class="td11" id="TBL-7-8-2" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">CFG         </span></td><td class="td11" id="TBL-7-8-3" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">Precomputed stack FSA       </span></td><td class="td11" id="TBL-7-8-4" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">none           </span></td><td class="td11" id="TBL-7-8-5" style="white-space:nowrap; text-align:center;"> <span class="ecrm-1000">—        </span></td>
-</tr><tr id="TBL-7-9-" style="vertical-align:baseline;"><td class="td11" id="TBL-7-9-1" style="white-space:nowrap; text-align:left;"> <span class="ecxc-1000">Merlon </span><span class="ecbx-1000">(this paper)  </span></td><td class="td11" id="TBL-7-9-2" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">CFG        </span></td><td class="td11" id="TBL-7-9-3" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">Precomputed Parser DWA  </span></td><td class="td11" id="TBL-7-9-4" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">none         </span></td><td class="td11" id="TBL-7-9-5" style="white-space:nowrap; text-align:center;"> <span class="ecbx-1000">supported  </span></td>
-</tr></table>
-</div>
-<!-- l. 185 --><p class="noindent"><span class="sent-num">11 Q1</span> <span class="ecrm-0900">“—” in the ambiguity column marks systems where ambiguity does not apply,
-</span><span class="ecrm-0900">because the construction targets regular, deterministic, or approximate
-</span><span class="ecrm-0900">languages. <span class="sent-num">11 Q2</span> All listed systems compute exact masks for their stated semantics
-</span><span class="ecrm-0900">except Pre</span>\(^3\)<span class="ecrm-0900">, which trades exactness for a smaller compiled object; both PSC
-</span><span class="ecrm-0900">and </span><span class="eccc0900-"><span class="small-caps">Merlon</span> </span><span class="ecrm-0900">move stack-dependent checks offline, using different
-</span><span class="ecrm-0900">precomputed automaton representations.</span></p>
+<table class="tabular" id="TBL-7"><colgroup id="TBL-7-1g"><col id="TBL-7-1"/><col id="TBL-7-2"/><col id="TBL-7-3"/><col id="TBL-7-4"/><col id="TBL-7-5"/></colgroup><tr id="TBL-7-1-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-1-1" style="white-space:normal; text-align:left;"><!-- l. 115 --><p class="noindent"><span class="sent-num">11 M1</span> <span class="ecbx-0900">System</span> </p></td><td class="td11" id="TBL-7-1-2" style="white-space:normal; text-align:left;"> <!-- l. 115 --><p class="noindent"><span class="sent-num">11 N1</span> <span class="ecbx-0900">Grammars</span> </p> </td><td class="td11" id="TBL-7-1-3" style="white-space:normal; text-align:left;"><!-- l. 115 --><p class="noindent"><span class="sent-num">11 O1</span> <span class="ecbx-0900">Precomputation</span> </p> </td><td class="td11" id="TBL-7-1-4" style="white-space:normal; text-align:left;"> <!-- l. 116 --><p class="noindent"><span class="sent-num">11 P1</span> <span class="ecbx-0900">Runtime
+ </span><span class="ecbx-0900">mask
+ </span><span class="ecbx-0900">work</span> </p></td><td class="td10" id="TBL-7-1-5" style="white-space:normal; text-align:left;"> <!-- l. 116 --><p class="noindent"><span class="sent-num">11 Q1</span> <span class="ecbx-0900">Ambiguity</span> </p> </td>
+</tr><tr id="TBL-7-2-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-2-1" style="white-space:normal; text-align:left;"><!-- l. 118 --><p class="noindent"><span class="sent-num">11 R1</span> <span class="ecrm-0900">Outlines
+</span><span class="ecrm-0900">(regular)</span> </p></td><td class="td11" id="TBL-7-2-2" style="white-space:normal; text-align:left;"> <!-- l. 118 --><p class="noindent"><span class="sent-num">11 S1</span> <span class="ecrm-0900">Regular</span> </p></td><td class="td11" id="TBL-7-2-3" style="white-space:normal; text-align:left;"> <!-- l. 118 --><p class="noindent"><span class="sent-num">11 T1</span> <span class="ecrm-0900">Token
+ </span><span class="ecrm-0900">DFA</span> </p></td><td class="td11" id="TBL-7-2-4" style="white-space:normal; text-align:left;"> <!-- l. 118 --><p class="noindent"><span class="sent-num">11 U1</span> <span class="ecrm-0900">Mask
+ </span><span class="ecrm-0900">lookup</span> </p></td><td class="td10" id="TBL-7-2-5" style="white-space:normal; text-align:left;"> <!-- l. 118 --><p class="noindent"><span class="sent-num">11 V1</span> <span class="ecrm-0900">—</span> </p></td>
+</tr><tr id="TBL-7-3-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-3-1" style="white-space:normal; text-align:left;"><!-- l. 119 --><p class="noindent"><span class="sent-num">11 W1</span> <span class="ecrm-0900">Koo
+</span><span class="ecrm-0900">et al. <span class="sent-num">11 W2</span> [</span><a href="#Xkoo2024automata"><span class="ecrm-0900">12</span></a><span class="ecrm-0900">]</span></p></td><td class="td11" id="TBL-7-3-2" style="white-space:normal; text-align:left;"> <!-- l. 119 --><p class="noindent"><span class="sent-num">11 X1</span> <span class="ecrm-0900">DCFL</span> </p></td><td class="td11" id="TBL-7-3-3" style="white-space:normal; text-align:left;"> <!-- l. 119 --><p class="noindent"><span class="sent-num">11 Y1</span> <span class="ecrm-0900">Token
+ </span><span class="ecrm-0900">PDA</span> </p></td><td class="td11" id="TBL-7-3-4" style="white-space:normal; text-align:left;"> <!-- l. 119 --><p class="noindent"><span class="sent-num">11 Z1</span> <span class="ecrm-0900">Stack-compatible
+ </span><span class="ecrm-0900">edges</span> </p></td><td class="td10" id="TBL-7-3-5" style="white-space:normal; text-align:left;"> <!-- l. 119 --><p class="noindent"><span class="sent-num">11 AA1</span> <span class="ecrm-0900">unsupported</span> </p> </td>
+</tr><tr id="TBL-7-4-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-4-1" style="white-space:normal; text-align:left;"><!-- l. 120 --><p class="noindent"><span class="sent-num">11 AB1</span> <span class="ecrm-0900">XGrammar</span> </p></td><td class="td11" id="TBL-7-4-2" style="white-space:normal; text-align:left;"> <!-- l. 120 --><p class="noindent"><span class="sent-num">11 AC1</span> <span class="ecrm-0900">CFG</span> </p></td><td class="td11" id="TBL-7-4-3" style="white-space:normal; text-align:left;"> <!-- l. 120 --><p class="noindent"><span class="sent-num">11 AD1</span> <span class="ecrm-0900">Cached
+ </span><span class="ecrm-0900">masks</span> </p></td><td class="td11" id="TBL-7-4-4" style="white-space:normal; text-align:left;"> <!-- l. 120 --><p class="noindent"><span class="sent-num">11 AE1</span> <span class="ecrm-0900">Context-dependent
+ </span><span class="ecrm-0900">PDA
+ </span><span class="ecrm-0900">checks</span> </p></td><td class="td10" id="TBL-7-4-5" style="white-space:normal; text-align:left;"> <!-- l. 120 --><p class="noindent"><span class="sent-num">11 AF1</span> <span class="ecrm-0900">supported</span> </p> </td>
+</tr><tr id="TBL-7-5-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-5-1" style="white-space:normal; text-align:left;"><!-- l. 121 --><p class="noindent"><span class="sent-num">11 AG1</span> <span class="ecrm-0900">XGrammar-2</span> </p></td><td class="td11" id="TBL-7-5-2" style="white-space:normal; text-align:left;"> <!-- l. 121 --><p class="noindent"><span class="sent-num">11 AH1</span> <span class="ecrm-0900">CFG</span> </p></td><td class="td11" id="TBL-7-5-3" style="white-space:normal; text-align:left;"> <!-- l. 121 --><p class="noindent"><span class="sent-num">11 AI1</span> <span class="ecrm-0900">JIT/cached
+ </span><span class="ecrm-0900">masks</span> </p></td><td class="td11" id="TBL-7-5-4" style="white-space:normal; text-align:left;"> <!-- l. 121 --><p class="noindent"><span class="sent-num">11 AJ1</span> <span class="ecrm-0900">Earley-context
+ </span><span class="ecrm-0900">checks</span> </p></td><td class="td10" id="TBL-7-5-5" style="white-space:normal; text-align:left;"> <!-- l. 121 --><p class="noindent"><span class="sent-num">11 AK1</span> <span class="ecrm-0900">supported</span> </p> </td>
+</tr><tr id="TBL-7-6-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-6-1" style="white-space:normal; text-align:left;"><!-- l. 122 --><p class="noindent"><span class="sent-num">11 AL1</span> <span class="ecrm-0900">llguidance</span> </p></td><td class="td11" id="TBL-7-6-2" style="white-space:normal; text-align:left;"> <!-- l. 122 --><p class="noindent"><span class="sent-num">11 AM1</span> <span class="ecrm-0900">Lexed
+ </span><span class="ecrm-0900">CFG</span> </p></td><td class="td11" id="TBL-7-6-3" style="white-space:normal; text-align:left;"> <!-- l. 122 --><p class="noindent"><span class="sent-num">11 AN1</span> <span class="ecrm-0900">Lexer
+ </span><span class="ecrm-0900">and
+ </span><span class="ecrm-0900">trie</span> </p></td><td class="td11" id="TBL-7-6-4" style="white-space:normal; text-align:left;"> <!-- l. 122 --><p class="noindent"><span class="sent-num">11 AO1</span> <span class="ecrm-0900">Earley/trie
+ </span><span class="ecrm-0900">traversal</span> </p></td><td class="td10" id="TBL-7-6-5" style="white-space:normal; text-align:left;"> <!-- l. 122 --><p class="noindent"><span class="sent-num">11 AP1</span> <span class="ecrm-0900">supported</span> </p> </td>
+</tr><tr id="TBL-7-7-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-7-1" style="white-space:normal; text-align:left;"><!-- l. 123 --><p class="noindent"><span class="sent-num">11 AQ1</span> <span class="ecrm-0900">DOMINO</span> </p></td><td class="td11" id="TBL-7-7-2" style="white-space:normal; text-align:left;"> <!-- l. 123 --><p class="noindent"><span class="sent-num">11 AR1</span> <span class="ecrm-0900">Lexed
+ </span><span class="ecrm-0900">CFG</span> </p></td><td class="td11" id="TBL-7-7-3" style="white-space:normal; text-align:left;"> <!-- l. 123 --><p class="noindent"><span class="sent-num">11 AS1</span> <span class="ecrm-0900">Subterminal
+ </span><span class="ecrm-0900">tries</span> </p></td><td class="td11" id="TBL-7-7-4" style="white-space:normal; text-align:left;"> <!-- l. 123 --><p class="noindent"><span class="sent-num">11 AT1</span> <span class="ecrm-0900">Trie-path
+ </span><span class="ecrm-0900">parser
+ </span><span class="ecrm-0900">checks</span> </p></td><td class="td10" id="TBL-7-7-5" style="white-space:normal; text-align:left;"> <!-- l. 123 --><p class="noindent"><span class="sent-num">11 AU1</span> <span class="ecrm-0900">parser-dependent</span> </p> </td>
+</tr><tr id="TBL-7-8-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-8-1" style="white-space:normal; text-align:left;"><!-- l. 124 --><p class="noindent"><span class="sent-num">11 AV1</span> <span class="ecrm-0900">Pre</span>\(^3\)             </p></td><td class="td11" id="TBL-7-8-2" style="white-space:normal; text-align:left;"> <!-- l. 124 --><p class="noindent"><span class="sent-num">11 AW1</span> <span class="ecrm-0900">LR(1)</span> </p></td><td class="td11" id="TBL-7-8-3" style="white-space:normal; text-align:left;"> <!-- l. 124 --><p class="noindent"><span class="sent-num">11 AX1</span> <span class="ecrm-0900">Prefix-conditioned
+ </span><span class="ecrm-0900">DPDA</span> </p></td><td class="td11" id="TBL-7-8-4" style="white-space:normal; text-align:left;"> <!-- l. 124 --><p class="noindent"><span class="sent-num">11 AY1</span> <span class="ecrm-0900">Stack-condition
+ </span><span class="ecrm-0900">checks</span> </p></td><td class="td10" id="TBL-7-8-5" style="white-space:normal; text-align:left;"> <!-- l. 124 --><p class="noindent"><span class="sent-num">11 AZ1</span> <span class="ecrm-0900">unsupported</span> </p> </td>
+</tr><tr id="TBL-7-9-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-9-1" style="white-space:normal; text-align:left;"><!-- l. 125 --><p class="noindent"><span class="sent-num">11 BA1</span> <span class="ecrm-0900">PSC [</span><a href="#Xli2026psc"><span class="ecrm-0900">14</span></a><span class="ecrm-0900">]</span> </p></td><td class="td11" id="TBL-7-9-2" style="white-space:normal; text-align:left;"> <!-- l. 125 --><p class="noindent"><span class="sent-num">11 BB1</span> <span class="ecrm-0900">DCFG</span> </p></td><td class="td11" id="TBL-7-9-3" style="white-space:normal; text-align:left;"> <!-- l. 125 --><p class="noindent"><span class="sent-num">11 BC1</span> <span class="ecrm-0900">Stack
+ </span><span class="ecrm-0900">classifier</span> </p></td><td class="td11" id="TBL-7-9-4" style="white-space:normal; text-align:left;"> <!-- l. 125 --><p class="noindent"><span class="sent-num">11 BD1</span> <span class="ecrm-0900">Compiled
+ </span><span class="ecrm-0900">stack
+ </span><span class="ecrm-0900">walk</span> </p></td><td class="td10" id="TBL-7-9-5" style="white-space:normal; text-align:left;"> <!-- l. 125 --><p class="noindent"><span class="sent-num">11 BE1</span> <span class="ecrm-0900">unsupported</span> </p> </td>
+</tr><tr id="TBL-7-10-" style="vertical-align:baseline;"><td class="td01" id="TBL-7-10-1" style="white-space:normal; text-align:left;"><!-- l. 126 --><p class="noindent"><span class="sent-num">11 BF1</span> <span class="ecxc-0900">GLRMask
+</span><span class="ecbx-0900">(this
+</span><span class="ecbx-0900">paper)</span> </p></td><td class="td11" id="TBL-7-10-2" style="white-space:normal; text-align:left;"> <!-- l. 126 --><p class="noindent"><span class="sent-num">11 BG1</span> <span class="ecbx-0900">CFG</span> </p></td><td class="td11" id="TBL-7-10-3" style="white-space:normal; text-align:left;"> <!-- l. 126 --><p class="noindent"><span class="sent-num">11 BH1</span> <span class="ecbx-0900">Parser
+ </span><span class="ecbx-0900">DWA</span> </p></td><td class="td11" id="TBL-7-10-4" style="white-space:normal; text-align:left;"> <!-- l. 127 --><p class="noindent"><span class="sent-num">11 BI1</span> <span class="ecbx-0900">Compiled
+ </span><span class="ecbx-0900">GSS
+ </span><span class="ecbx-0900">walk</span> </p></td><td class="td10" id="TBL-7-10-5" style="white-space:normal; text-align:left;"> <!-- l. 127 --><p class="noindent"><span class="sent-num">11 BJ1</span> <span class="ecbx-0900">supported</span> </p> </td>
+</tr></table></div>
+<!-- l. 132 --><p class="noindent"><span class="sent-num">11 BK1</span> <span class="ecrm-0900">The table summarizes masking mechanisms for the stated grammar classes;
+</span><span class="ecrm-0900">supported grammar features and lexical semantics differ across systems. <span class="sent-num">11 BK2</span> The
+</span><span class="ecrm-0900">Outlines row describes its regular-constraint method.</span></p>
 </figure>
 </div>
-<!-- l. 193 --><p class="noindent"><span class="sent-num">11 R1</span> Three differences from prior systems shape the rest of the
-paper: (i) the Parser DWA is built for the joint (lexer-state,
-vocabulary-token) domain, so a single walk answers the
-mask for the whole vocabulary; (ii) the push/read algebra
-eliminates intermediate stack states from the runtime mask
-check, so the walk is depth-bounded by stack prefixes rather
-than by unbounded reduction chains; and (iii) the parser
-interface is reduced to terminal stack-effect recognizers with
-explicit lexer behavior. <span class="sent-num">11 R2</span> The runtime evaluates compiled
-automata and applies compiled rewrites; it does not run Earley
-items, PDA steps, or candidate-token parser simulations. <span class="sent-num">11 R3</span> The
-price is paid at compile time; we analyse that trade-off in
-§<a href="#cold-path-and-hot-path">12<!-- tex4ht:ref: sec:disc-economics  --></a>.</p>
-<h3 class="sectionHead" id="discussion"><span class="titlemark">12   </span> <a id="x1-7300012"></a>Discussion</h3>
-<!-- l. 7 --><p class="noindent"><span class="sent-num">12 A1</span> The empirical picture from §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> is mixed rather than one-sided.
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is much slower to build than llguidance, but once
-compiled it removes almost all online mask-generation cost from
-the decode loop. <span class="sent-num">12 A2</span> On the 9,558 official JSONSchemaBench
-schemas, <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>keeps every recorded TBM below 71\(\mu \)s, while
-llguidance has a 14.43ms recorded tail. <span class="sent-num">12 A3</span> The median TBM gap is
-about 3.4\(\times \), and llguidance’s median is already small enough
-for many JSON serving settings. <span class="sent-num">12 A4</span> The useful question is
-therefore not whether precomputation is universally cheaper, or
-whether online parsing is intrinsically too slow. <span class="sent-num">12 A5</span> It is where a
-cached, predictable, grammar-general mask representation
-matters.</p>
-<!-- l. 17 --><p class="noindent"><span class="sent-num">12 B1</span> <span class="paragraphHead" id="cold-path-and-hot-path"><a id="x1-7400012"></a><span class="ecbx-1095">Cold path and hot path.</span></span>
-   For fresh, one-off JSON-schema generations, llguidance
-has the better latency shape. <span class="sent-num">12 B2</span> Across successful builds, its
-median TTFM is 1.11ms and p99 TTFM is 12.02ms, while
-<span class="eccc1095-"><span class="small-caps">Merlon</span></span>’s median TTFM is 10.42ms and p99 TTFM is
-229.81ms on the original 12-vCPU build host. <span class="sent-num">12 B3</span> A system
-that exposes arbitrary first-use schemas should not put this
-prototype compiler directly on the user-visible path for short
-generations.</p><!-- l. 26 --><p class="indent"><span class="sent-num">12 C1</span> That does not make the construction a poor serving primitive. <span class="sent-num">12 C2</span> It suggests a hybrid deployment shape. <span class="sent-num">12 C3</span> The first request for a
-normalized schema can use an online decoder immediately, while
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>compiles a cached artifact at deployment time or after
-the first request. <span class="sent-num">12 C4</span> Subsequent requests against the same schema,
-and fixed tool-call schemas used by an application, run on the
-compiled hot path. <span class="sent-num">12 C5</span> In that regime, the relevant cost is not the
-arithmetic of one short cold request; it is tail predictability
-and CPU service demand across many requests and many
-tokens.</p>
-<!-- l. 35 --><p class="noindent"><span class="sent-num">12 D1</span> <span class="paragraphHead" id="latemask-pressure"><a id="x1-7500012"></a><span class="ecbx-1095">Late-mask pressure.</span></span>
-   The deadline model in §<a href="#evaluation">10<!-- tex4ht:ref: sec:experiments  --></a> is deliberately conservative. <span class="sent-num">12 D2</span> A late
-mask merely causes its own request to miss decode opportunities
-until the mask is ready. <span class="sent-num">12 D3</span> The model does not charge for
-whole-batch stalls, KV-cache movement, recomputation, memory
-reserved by inactive requests, or any scheduling bookkeeping. <span class="sent-num">12 D4</span> Under that best-case interpretation, llguidance’s aggregate
-overrun loss is small at ordinary JSON decode budgets and grows
-only as the target token period approaches the long tail of mask
-latency: 0.33% at a 500\(\mu \)s budget, 1.91% at 200\(\mu \)s, and 5.40% at
-100\(\mu \)s. <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>has no measurable overrun at these budgets in
-the sweep.</p><!-- l. 46 --><p class="indent"><span class="sent-num">12 E1</span> The same data can be read as a CPU service-capacity result. <span class="sent-num">12 E2</span> Mean TBM is 3.45\(\mu \)s for <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>and 21.17\(\mu \)s for llguidance. <span class="sent-num">12 E3</span> At
-high aggregate constrained-token throughput, online masking
-consumes CPU cores even if the accelerator can keep issuing
-model steps. <span class="sent-num">12 E4</span> This is a realistic pressure point, but it is also an
-engineering trade-off: JSON-schema masking with llguidance is
-already cheap enough that the extra CPU may be acceptable
-unless aggregate constrained throughput is high or SLOs are
-sensitive to the tail.</p>
-<!-- l. 54 --><p class="noindent"><span class="sent-num">12 F1</span> <span class="paragraphHead" id="tail-predictability"><a id="x1-7600012"></a><span class="ecbx-1095">Tail predictability.</span></span>
-   Mean mask time is only half the story. <span class="sent-num">12 F2</span> Online systems can
-exhibit heavy-tailed TBM distributions because lexer state
-exploration, reduction depth, and stack fork counts depend on
-the parse state. <span class="sent-num">12 F3</span> The Parser DWA’s runtime cost is bounded by
-an offline-known quantity, the maximum stack-prefix read
-depth in the compiled automaton, so compilation does not
-only reduce the mean; it tightens the tail. <span class="sent-num">12 F4</span> For SLO-bound
-serving, especially under fast decode budgets or high aggregate
-constrained throughput, the tail is the operational figure of
-merit.</p>
-<!-- l. 63 --><p class="noindent"><span class="sent-num">12 G1</span> <span class="paragraphHead" id="json-schemas-versus-general-grammars"><a id="x1-7700012"></a><span class="ecbx-1095">JSON schemas versus general grammars.</span></span>
-   The results should not be read as showing that llguidance is
-practically bad for JSON-schema constrained decoding. <span class="sent-num">12 G2</span> JSON is
-unusually friendly to online lexed parsing: quoted strings,
-numbers, literals, object keys, and recursive values are separated
-by structural delimiters or whitespace. <span class="sent-num">12 G3</span> This delimiter structure
-keeps most token steps simple. <span class="sent-num">12 G4</span> The stronger distinction
-is semantic and structural: <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>targets exact token
-admissibility for normalized CFGs with a simple, predictable
-lexer/commit interface, including grammars where lexeme
-boundaries cross vocabulary tokens in less JSON-like ways. <span class="sent-num">12 G5</span> Systems based on online lexing and parsing can be extremely
-effective on JSON while still exposing more subtle semantics on
-arbitrary Lark/CFG inputs.</p>
-<!-- l. 75 --><p class="noindent"><span class="sent-num">12 H1</span> <span class="paragraphHead" id="scope-and-limits"><a id="x1-7800012"></a><span class="ecbx-1095">Scope and limits.</span></span>
-   The first limit is compilation memory. <span class="sent-num">12 H2</span> The Parser DWA’s size
-scales with grammar size and with the mask-equivalence
-quotient of the vocabulary. <span class="sent-num">12 H3</span> For modest grammars and the
-quotients we observe (factors of 5–20\(\times \) over the raw 128k
-vocabulary) the artefact is in the tens of megabytes. <span class="sent-num">12 H4</span> We have not
-characterised this dependence asymptotically or measured a
-regime in which the Parser DWA does not fit in RAM. <span class="sent-num">12 H5</span> Full
-programming-language syntaxes, very large vocabularies, and
-tokenizers that defeat mask-equivalence are all plausible breaking
-points.</p><!-- l. 86 --><p class="indent"><span class="sent-num">12 I1</span> A second limit is vocabulary coupling. <span class="sent-num">12 I2</span> Compilation is
-per-(grammar, vocabulary): token bytes determine Terminal-DWA
-paths and Parser-DWA weights, so a tokenizer change forces a
-full recompile. <span class="sent-num">12 I3</span> In deployed serving stacks this is normally
-amortized across a fixed model and tokenizer, but it is expensive
-when it happens.</p><!-- l. 92 --><p class="indent"><span class="sent-num">12 J1</span> A third limit is the constraint class itself. <span class="sent-num">12 J2</span> Many real-world
-constraints are not context-free: variable-scoping rules,
-type-correctness, and value uniqueness in JSON schemas.
-<span class="eccc1095-"><span class="small-caps">Merlon</span> </span>gives up exactness on these the moment the constraint
-stops being expressible as a CFG. <span class="sent-num">12 J3</span> A natural extension, outlined
-in §<a href="#future-work">12<!-- tex4ht:ref: sec:disc-futures  --></a>, is to attach a small external state to each GSS branch and
-consult it at accepting DWA states. <span class="sent-num">12 J4</span> We have not built this and
-treat it as future work.</p><!-- l. 100 --><p class="indent"><span class="sent-num">12 K1</span> A fourth limit is ambiguity blow-up. <span class="sent-num">12 K2</span> The GSS handles
-ambiguity gracefully in the common case, but pathological
-grammars can still cause stack forks that scale super-linearly in
-generation length. <span class="sent-num">12 K3</span> Restricting to LR(1)-compatible grammars
-eliminates this risk; admission control along these lines is
-appropriate for SLA-bound services.</p>
-<!-- l. 106 --><p class="noindent"><span class="sent-num">12 L1</span> <span class="paragraphHead" id="future-work"><a id="x1-7900012"></a><span class="ecbx-1095">Future work.</span></span>
-   Each of the following directions is opened by a specific
-property of the construction.
-</p><!-- l. 111 --><p class="indent"><span class="sent-num">12 M1</span> The first is unifying <span class="eccc1095-"><span class="small-caps">Mask</span> </span>and <span class="eccc1095-"><span class="small-caps">Commit</span></span>, which already share
-the same stack-effect automata. <span class="eccc1095-"><span class="small-caps">Mask</span> </span>uses their composed read
-prefixes to test admissibility, while <span class="eccc1095-"><span class="small-caps">Commit</span> </span>uses the full rewrites
-to update the parser stack after a token is chosen. <span class="sent-num">12 M2</span> A natural next
-step is to share more of the traversal and cache structure
-between these two uses, so the walk that proves a token
-admissible also exposes the rewrite information needed if
-that token is chosen. <span class="sent-num">12 M3</span> The question is whether the extra
-compiled state improves locality enough to justify the larger
-artifact.</p><!-- l. 120 --><p class="indent"><span class="sent-num">12 N1</span> A second direction is opened by the walk being small and the
-GSS sharing common prefixes: multi-position masks. <span class="sent-num">12 N2</span> Speculative
-decoding asks for masks at several future positions at once, and
-running the walk from multiple GSS frontiers in parallel is
-realistic because the common-prefix structure shares most of the
-work. <span class="sent-num">12 N3</span> The interface to a speculative decoder is the right place to
-materialise this generalisation.</p><!-- l. 127 --><p class="indent"><span class="sent-num">12 O1</span> A third direction follows from the construction being
-parametric in the weight semiring: richer weights. <span class="sent-num">12 O2</span> We use the
-Boolean lattice because we want exact masks. <span class="sent-num">12 O3</span> Swapping in a
-probability semiring would give per-token validity probabilities at
-the cost of switching from bitvector AND to floating-point
-multiply, the natural compilation target for soft constraints or
-grammar-aware reranking; a tropical semiring would give
-minimum-cost completion scores. <span class="sent-num">12 O4</span> None of these change the
-structure of the construction.</p><!-- l. 135 --><p class="indent"><span class="sent-num">12 P1</span> The fourth direction exploits the factorisation behind the
-Parser DWA, bracketed internal state and joint indexing of
-inputs: a hybrid of a CFG and a small auxiliary state. <span class="sent-num">12 P2</span> Type
-systems, scoping rules, and uniqueness constraints all factor as “a
-CFG part plus a small auxiliary state”, so the CFG part can be
-precompiled exactly while the auxiliary state is consulted
-only at accepting states. <span class="sent-num">12 P3</span> This preserves the runtime cost
-profile on the CFG part while losing the “one walk, whole
-mask” property for the context-sensitive part. <span class="sent-num">12 P4</span> We see it as
-the most direct next step toward making GCD usable on
-whole programming languages, not just their context-free
-skeletons.</p>
-<h3 class="sectionHead" id="conclusion"><span class="titlemark">13   </span> <a id="x1-8000013"></a>Conclusion</h3>
-<!-- l. 8 --><p class="noindent"><span class="sent-num">13 A1</span> <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>treats grammar-constrained decoding as a precomputation
-problem. <span class="sent-num">13 A2</span> Joint (lexer-state, vocabulary-token) indexing,
-push/read cancellation, and weighted determinization together
-turn a per-step parser simulation into a single deterministic walk
-over a compiled automaton. <span class="sent-num">13 A3</span> The result is microsecond-scale
-masking with a much tighter measured tail on the evaluated
-JSON-schema and tool-call workloads. <span class="sent-num">13 A4</span> This does not make online
-systems obsolete: for first-use JSON schemas, llguidance is often
-the better engineering choice and is already fast enough for many
-deployments. <span class="sent-num">13 A5</span> The contribution of <span class="eccc1095-"><span class="small-caps">Merlon</span> </span>is a more general
-one: exact token admissibility for normalized CFGs with a
-simple, predictable hot path and lexer/commit semantics,
-paid for by heavier compilation, a fixed vocabulary, and a
-CFG-only constraint surface. <span class="sent-num">13 A6</span> These are the kinds of costs serving
-systems already pay for caching, batching, and compilation
-elsewhere in the stack. <span class="sent-num">13 A7</span> The technique fits that regime, and
-we expect the construction to extend cleanly to the richer
-constraints that production systems are now being asked to
-enforce.</p><!-- l. 1 --><p class="noindent"><span class="sent-num">13 B1</span>
+<h3 class="sectionHead" id="discussion"><span class="titlemark">12   </span> <a id="x1-6600012"></a>Discussion</h3>
+<!-- l. 5 --><p class="noindent"><span class="sent-num">12 A1</span> <span class="paragraphHead" id="scope-and-limits"><a id="x1-6700012"></a><span class="ecbx-1095">Scope and limits.</span></span>
+   The Parser DWA’s size scales with grammar size and
+with the mask-equivalence quotient of the vocabulary. <span class="sent-num">12 A2</span> We
+have not characterised this dependence asymptotically or
+measured a regime in which the Parser DWA does not fit in
+RAM.</p><!-- l. 11 --><p class="indent"><span class="sent-num">12 B1</span> Compilation is per-(grammar, vocabulary): token bytes
+determine Terminal-DWA paths and Parser-DWA weights, so a
+tokenizer change forces a full recompile. <span class="sent-num">12 B2</span> In deployed serving
+stacks this is normally amortized across a fixed model and
+tokenizer.</p><!-- l. 16 --><p class="indent"><span class="sent-num">12 C1</span> Many real-world constraints are not context-free:
+variable-scoping rules, type-correctness, and value uniqueness in
+JSON schemas. <span class="sent-num">12 C2</span> These constraints are outside the scope of this
+construction. <span class="sent-num">12 C3</span> Pathological ambiguous grammars can also
+cause stack forks that scale super-linearly in generation
+length.</p>
+<h3 class="sectionHead" id="conclusion"><span class="titlemark">13   </span> <a id="x1-6800013"></a>Conclusion</h3>
+<!-- l. 6 --><p class="noindent"><span class="sent-num">13 A1</span> <span class="eccc1095-"><span class="small-caps">GLRMask</span> </span>compiles the parser-dependent part of token
+admissibility ahead of time. <span class="sent-num">13 A2</span> Joint (lexer-state, vocabulary-token)
+indexing, push/read cancellation, and weighted determinization
+produce a deterministic weighted automaton over parser-stack
+symbols. <span class="sent-num">13 A3</span> At runtime, <span class="eccc1095-"><span class="small-caps">Mask</span> </span>reads the graph-structured parser
+stack through this automaton, while <span class="eccc1095-"><span class="small-caps">Commit</span> </span>applies the
+compiled stack rewrites after a token is sampled.</p><!-- l. 1 --><p class="noindent"><span class="sent-num">13 B1</span>
 </p>
-<h3 class="likesectionHead" id="references"><a id="x1-8100013"></a>References</h3>
+<h3 class="likesectionHead" id="references"><a id="x1-6900013"></a>References</h3>
 <!-- l. 1 --><p class="noindent"><span class="sent-num">13 C1</span>
 </p><div class="thebibliography">
 <p class="bibitem"><span class="biblabel">
 <a id="Xaycock2001faster"></a>[1] <span class="bibsp">   </span></span>John  Aycock,  R. Nigel  Horspool,  Jan  Janoušek,
     and  Bořivoj  Melichar.    Even  faster  generalized  LR
-    parsing. In <span class="ecti-1095">Acta Informatica</span>, volume 37, pages 633–651.
-    Springer, 2001.
+    parsing.  <span class="ecti-1095">Acta Informatica</span>, 37:633–651, 2001.  doi: 10.10
+    07/PL00013319.
     </p>
 <p class="bibitem"><span class="biblabel">
 <a id="Xbeurer2024domino"></a>[2] <span class="bibsp">   </span></span>Luca  Beurer-Kellner,  Marc  Fischer,  and  Martin
-    Vechev.       Guiding   LLMs   the   right   way:   Fast,
-    non-invasive  constrained  generation.    In  <span class="ecti-1095">Advances  in
-    </span><span class="ecti-1095">Neural Information Processing Systems (NeurIPS)</span>, 2024.
-    arXiv:2403.06988.
+    Vechev. Guiding LLMs the right way: Fast, non-invasive
+    constrained  generation.    In  <span class="ecti-1095">Proceedings  of  the  41st
+    </span><span class="ecti-1095">International Conference on Machine Learning</span>, volume
+    235 of <span class="ecti-1095">Proceedings of Machine Learning Research</span>, pages
+    3658–3673. PMLR, 2024. arXiv:2403.06988.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xchen2025pre3"></a>[3] <span class="bibsp">   </span></span>Junyi  Chen,  Shihao  Bai,  Zaijun  Wang,  Siyu  Wu,
+<a id="Xbouayad2026weave"></a>[3] <span class="bibsp">   </span></span>Alexandre       Bouayad.                   Weave       of
+    formal thought. <span class="ecti-1095">arXiv preprint arXiv:2606.25987</span>, 2026.
+    URL <a class="url" href="https://arxiv.org/abs/2606.25987"><span class="ectt-1095">https://arxiv.org/abs/2606.25987</span></a>.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xchen2025pre3"></a>[4] <span class="bibsp">   </span></span>Junyi  Chen,  Shihao  Bai,  Zaijun  Wang,  Siyu  Wu,
     Chuheng Du, Hailong Yang, Ruihao Gong, Shengzhong
-    Liu, and Fan Wu. Pre\(^3\): Enabling deterministic pushdown
-    automata  for  faster  structured  LLM  generation.    In
-    <span class="ecti-1095">Proceedings   of   the   63rd   Annual   Meeting   of   the
-    </span><span class="ecti-1095">Association for Computational Linguistics (ACL)</span>, 2025.
+    Liu,  Fan  Wu,  and  Guihai  Chen.     Pre\(^3\):  Enabling
+    deterministic pushdown automata for faster structured
+    LLM  generation.   In  <span class="ecti-1095">Proceedings  of  the  63rd  Annual
+    </span><span class="ecti-1095">Meeting of the Association for Computational Linguistics
+    </span><span class="ecti-1095">(Volume        1:        Long        Papers)</span>,         pages
+    11253–11267. Association for Computational Linguistics,
+    2025. doi: 10.18653/v1/2025.acl-long.551.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xdenny2010ielr"></a>[4] <span class="bibsp">   </span></span>Joel E. Denny and Brian A. Malloy.  The IELR(1)
+<a id="Xdenny2010ielr"></a>[5] <span class="bibsp">   </span></span>Joel E. Denny and Brian A. Malloy.  The IELR(1)
     algorithm for generating minimal LR(1) parser tables for
     non-LR(1) grammars with conflict resolution.  <span class="ecti-1095">Science
     </span><span class="ecti-1095">of Computer Programming</span>, 75(11):943–979, 2010.  doi:
     10.1016/j.scico.2009.08.001.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xdong2024xgrammar"></a>[5] <span class="bibsp">   </span></span>Yixin  Dong,  Charlie F.  Shi,  Tianqi  Chen,  et al.
-    XGrammar: Flexible and efficient structured generation
-    engine  for  large  language  models.     <span class="ecti-1095">arXiv  preprint
-    </span><span class="ecti-1095">arXiv:2411.15100</span>, 2024.
+<a id="Xdong2024xgrammar"></a>[6] <span class="bibsp">   </span></span>Yixin Dong, Charlie F. Ruan, Yaxing Cai, Ruihang
+    Lai, Ziyi Xu, Yilong Zhao, and Tianqi Chen. XGrammar:
+    Flexible  and  efficient  structured  generation  engine  for
+    large language models. <span class="ecti-1095">arXiv preprint arXiv:2411.15100</span>,
+    2024.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xdroste2009handbook"></a>[6] <span class="bibsp">   </span></span>Manfred Droste, Werner Kuich, and Heiko Vogler.
-    <span class="ecti-1095">Handbook of Weighted Automata</span>. Springer, 2009.
+<a id="Xdroste2009handbook"></a>[7] <span class="bibsp">   </span></span>Manfred Droste, Werner Kuich, and Heiko Vogler,
+    editors. <span class="ecti-1095">Handbook of Weighted Automata</span>. Springer, 2009.
+    doi: 10.1007/978-3-642-01492-5.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xfahrenberg2017featured"></a>[7] <span class="bibsp">   </span></span>Uli Fahrenberg and Axel Legay.  Featured weighted
+<a id="Xfahrenberg2017featured"></a>[8] <span class="bibsp">   </span></span>Uli Fahrenberg and Axel Legay.  Featured weighted
     automata. <span class="ecti-1095">arXiv preprint arXiv:1702.07484</span>, 2017.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xgeng2023gcd"></a>[8] <span class="bibsp">   </span></span>Saibo  Geng,  Martin  Josifoski,  Maxime  Peyrard,
+<a id="Xgeng2023gcd"></a>[9] <span class="bibsp">   </span></span>Saibo  Geng,  Martin  Josifoski,  Maxime  Peyrard,
     and Robert West.   Grammar-constrained decoding for
     structured NLP tasks without finetuning. In <span class="ecti-1095">Proceedings
     </span><span class="ecti-1095">of the 2023 Conference on Empirical Methods in Natural
@@ -1835,41 +1586,76 @@ enforce.</p><!-- l. 1 --><p class="noindent"><span class="sent-num">13 B1</span>
     Computational Linguistics, 2023.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xkoo2024automata"></a>[9] <span class="bibsp">   </span></span>Terry        Koo,        Frederick        Liu,        and
+<a id="Xgeng2025jsonschemabench"></a>[10] <span class="bibsp">   </span></span>Saibo Geng, Hudson Cooper, Michał Moskal, Samuel
+    Jenkins, Julian Berman, Nathan Ranchin, Robert West,
+    Eric Horvitz, and Harsha Nori.  JSONSchemaBench: A
+    rigorous benchmark of structured outputs for language
+    models. <span class="ecti-1095">arXiv preprint arXiv:2501.10868</span>, 2025.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xhua2026gram2token"></a>[11] <span class="bibsp">   </span></span>Hantao Hua, Jiming Su, Hao Tang, Yiping Yao, and
+    Feng Zhu. Gram2Token: Enabling run-time GPU-native
+    grammar-constrained decoding for LLMs. In <span class="ecti-1095">Proceedings
+    </span><span class="ecti-1095">of  the  43rd  International  Conference  on  Machine
+    </span><span class="ecti-1095">Learning</span>, volume 306 of <span class="ecti-1095">Proceedings of Machine Learning
+    </span><span class="ecti-1095">Research</span>,  pages  46169–46185.  PMLR,  2026.     URL
+    <a class="url" href="https://proceedings.mlr.press/v306/hua26b.html"><span class="ectt-1095">https://proceedings.mlr.press/v306/hua26b.html</span></a>.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xkoo2024automata"></a>[12] <span class="bibsp">   </span></span>Terry        Koo,        Frederick        Liu,        and
     Luheng He.   Automata-based constraints for language
     model decoding.  In <span class="ecti-1095">Conference on Language Modeling
     </span><span class="ecti-1095">(COLM)</span>, 2024. arXiv:2407.08103.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xli2026psc"></a>[10] <span class="bibsp">   </span></span>Yongmin  Li,  Yihong  Dong,  Jia  Li,  and  Ge Li.
+<a id="Xli2026xgrammar2"></a>[13] <span class="bibsp">   </span></span>Linzhang Li, Yixin Dong, Guanjie Wang, Ziyi Xu,
+    Alexander  Jiang,  and  Tianqi  Chen.     XGrammar-2:
+    Dynamic and efficient structured generation engine for
+    agentic LLMs.  <span class="ecti-1095">arXiv preprint arXiv:2601.04426</span>, 2026.
+    URL <a class="url" href="https://arxiv.org/abs/2601.04426"><span class="ectt-1095">https://arxiv.org/abs/2601.04426</span></a>.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xli2026psc"></a>[14] <span class="bibsp">   </span></span>Yongmin  Li,  Yihong  Dong,  Jia  Li,  and  Ge Li.
     Efficient grammar-constrained decoding via parser stack
     classification.   <span class="ecti-1095">arXiv preprint arXiv:2608.03065</span>,  2026.
     URL <a class="url" href="https://arxiv.org/abs/2608.03065"><span class="ectt-1095">https://arxiv.org/abs/2608.03065</span></a>.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xllguidance2024"></a>[11] <span class="bibsp">   </span></span>Microsoft. llguidance: Low-level guidance library for
+<a id="Xllguidance2024"></a>[15] <span class="bibsp">   </span></span>Microsoft. llguidance: Low-level guidance library for
     constrained                                              decoding.
     <a class="url" href="https://github.com/guidance-ai/llguidance"><span class="ectt-1095">https://github.com/guidance-ai/llguidance</span></a>,  2024.
     Core engine for constrained generation in Guidance.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xpark2025flexible"></a>[12] <span class="bibsp">   </span></span>Kanghee Park, Timothy Zhou, and Loris D’Antoni.
-    Flexible and efficient grammar-constrained decoding. In
-    <span class="ecti-1095">Proceedings  of  the  42nd  International  Conference  on
-    </span><span class="ecti-1095">Machine Learning (ICML)</span>, 2025. To appear.
+<a id="Xpark2025flexible"></a>[16] <span class="bibsp">   </span></span>Kanghee    Park,    Timothy    Zhou,    and    Loris
+    D’Antoni.   Flexible  and  efficient  grammar-constrained
+    decoding.    In  <span class="ecti-1095">Proceedings  of  the  42nd  International
+    </span><span class="ecti-1095">Conference     on     Machine     Learning     (ICML)</span>,
+    volume   267   of   <span class="ecti-1095">Proceedings   of   Machine   Learning
+    </span><span class="ecti-1095">Research</span>,  pages  48262–48275.  PMLR,  2025.     URL
+    <a class="url" href="https://proceedings.mlr.press/v267/park25l.html"><span class="ectt-1095">https://proceedings.mlr.press/v267/park25l.html</span></a>.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xtomita1985glr"></a>[13] <span class="bibsp">   </span></span>Masaru  Tomita.   An  efficient  context-free  parsing
+<a id="Xsullivan2026cfgzip"></a>[17] <span class="bibsp">   </span></span>Michael Sullivan and Alexander Koller. Accelerating
+    constrained           decoding           with           token
+    space  compression.   <span class="ecti-1095">arXiv  preprint  arXiv:2605.29986</span>,
+    2026. URL <a class="url" href="https://arxiv.org/abs/2605.29986"><span class="ectt-1095">https://arxiv.org/abs/2605.29986</span></a>.
+    </p>
+<p class="bibitem"><span class="biblabel">
+<a id="Xtomita1985glr"></a>[18] <span class="bibsp">   </span></span>Masaru  Tomita.   An  efficient  context-free  parsing
     algorithm for natural languages. In <span class="ecti-1095">Proceedings of the 9th
     </span><span class="ecti-1095">International Joint Conference on Artificial Intelligence</span>,
     pages 756–764, 1985.
     </p>
 <p class="bibitem"><span class="biblabel">
-<a id="Xwillard2023outlines"></a>[14] <span class="bibsp">   </span></span>Brandon T.  Willard  and  Rémi  Louf.    Efficient
+<a id="Xwillard2023outlines"></a>[19] <span class="bibsp">   </span></span>Brandon T.  Willard  and  Rémi  Louf.    Efficient
     guided  generation  for  large  language  models.    <span class="ecti-1095">arXiv
     </span><span class="ecti-1095">preprint arXiv:2307.09702</span>, 2023.
 </p>
 </div>
+<div class="footnotes"><!-- l. 21 --><p class="indent"><span class="sent-num">13 D1</span> <span class="footnote-mark"><a href="#fn1x0-bk" id="fn1x0"><sup class="textsuperscript">1</sup></a></span><span class="ecrm-0900">PSC [</span><a href="#Xli2026psc"><span class="ecrm-0900">14</span></a><span class="ecrm-0900">] also compiles stack-dependent mask computation ahead of
+</span><span class="ecrm-0900">time, targeting deterministic context-free grammars. <span class="sent-num">13 D2</span> Section </span><a href="#related-work"><span class="ecrm-0900">11</span><!-- tex4ht:ref: sec:related-work  --></a> <span class="ecrm-0900">discusses the
+</span><span class="ecrm-0900">relationship between the approaches.</span></p> </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

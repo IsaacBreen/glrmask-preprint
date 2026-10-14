@@ -504,6 +504,28 @@ div.voicenote {
   margin-top: 0;
 }
 
+
+/* Preserve the vector plot aspect ratio and keep long math locally scrollable. */
+figure img.tbm-figure {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  margin: 0 auto;
+}
+mjx-container[display="true"] {
+  display: block;
+  max-width: 100%;
+  min-width: 0 !important; /* MathJax injects a minimum width for numbered equations. */
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.center > p.noindent {
+  text-align: center;
+  word-spacing: normal;
+  hyphens: none;
+}
+
 /* Preprint edition details; original paper styling remains unchanged. */
 .preprint-header { border:1px solid #e5e2dc; border-radius:10px; background:#f7f5f1; padding:16px 19px; margin:0 0 34px; font-family:'Source Sans 3',-apple-system,Arial,sans-serif; line-height:1.45; }
 .preprint-kicker {display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; font-weight:700; letter-spacing:.075em; color:#46576c; }
@@ -516,6 +538,7 @@ div.voicenote {
 .preprint-note {font-size:12px;line-height:1.45;color:#696e76;margin:11px 0 0;}
 @media(max-width:640px){
  .preprint-header{padding:12px 13px;margin-bottom:22px}
+ #label-switch{position:static !important;display:flex !important;width:fit-content;margin:0 0 1rem auto}
  .preprint-caption{font-size:12px}
  .preprint-note{font-size:11px}
  .center>p.noindent{text-align:left;word-spacing:normal;hyphens:none}
